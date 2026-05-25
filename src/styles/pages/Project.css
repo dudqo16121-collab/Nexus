@@ -1,0 +1,1057 @@
+/* ════════════════════════════════════════════════════════
+   프로젝트 관리 (Project Management v2)
+════════════════════════════════════════════════════════ */
+
+/* ============================================================
+   1) 2-Panel 레이아웃
+============================================================ */
+.pm-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 20px;
+    min-height: calc(100vh - 200px);
+}
+
+.pm-sidebar {
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--card-shadow);
+}
+
+.pm-side-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 14px;
+    background: var(--bg-body);
+    padding: 4px;
+    border-radius: 10px;
+}
+.pm-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    padding: 8px 6px;
+    border-radius: 7px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: 0.2s;
+}
+.pm-tab:hover { color: var(--text-main); }
+.pm-tab.active {
+    background: var(--panel-bg);
+    color: var(--primary-color);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.06);
+}
+
+.pm-search {
+    position: relative;
+    margin-bottom: 14px;
+}
+.pm-search i {
+    position: absolute;
+    left: 12px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+.pm-search input {
+    width: 100%;
+    padding: 10px 12px 10px 34px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 0.88rem;
+    outline: none;
+}
+.pm-search input:focus { border-color: var(--primary-color); }
+
+.pm-project-list {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+.pm-project-list::-webkit-scrollbar { width: 6px; }
+.pm-project-list::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+
+.pm-project-item {
+    background: var(--bg-body);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+.pm-project-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0;
+    width: 4px; height: 100%;
+    background: var(--pm-color, var(--primary-color));
+}
+.pm-project-item:hover {
+    transform: translateX(2px);
+    border-color: var(--primary-color);
+}
+.pm-project-item.active {
+    background: rgba(67,97,238,0.08);
+    border-color: var(--primary-color);
+}
+.pm-project-item h4 {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.pm-project-item .pm-pi-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+.pm-project-item .pm-pi-status {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+.pm-status-todo        { background: rgba(148,163,184,0.18); color: #64748b; }
+.pm-status-in-progress { background: rgba(67,97,238,0.12);   color: var(--primary-color); }
+.pm-status-done        { background: rgba(46,194,126,0.12);  color: #2ec27e; }
+
+.pm-pi-progress {
+    height: 4px;
+    background: var(--border-color);
+    border-radius: 2px;
+    margin-top: 8px;
+    overflow: hidden;
+}
+.pm-pi-progress > span {
+    display: block;
+    height: 100%;
+    background: var(--pm-color, var(--primary-color));
+    transition: 0.4s;
+}
+
+/* ============================================================
+   2) Right Main — Project Header + Kanban
+============================================================ */
+.pm-main {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    min-width: 0;
+}
+
+.pm-project-header {
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 22px 26px;
+    box-shadow: var(--card-shadow);
+}
+.pm-ph-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+}
+.pm-ph-empty i {
+    font-size: 2.2rem;
+    margin-bottom: 10px;
+    color: var(--border-color);
+}
+.pm-ph-empty p { font-size: 0.95rem; }
+
+.pm-ph-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+.pm-ph-row > div { min-width: 0; }
+.pm-ph-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.pm-ph-color {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.pm-ph-desc {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+.pm-ph-meta {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+.pm-ph-meta strong { color: var(--text-main); margin-left: 4px; }
+
+.pm-ph-actions { display: flex; gap: 6px; }
+.pm-icon-btn {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-body);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 0.95rem;
+}
+.pm-icon-btn:hover {
+    background: var(--hover-bg);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* ============================================================
+   3) Kanban Board
+============================================================ */
+.pm-kanban {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    flex: 1;
+}
+
+.pm-col {
+    background: var(--bg-body);
+    border-radius: 14px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    min-height: 300px;
+    border: 1px solid var(--border-color);
+}
+.pm-col-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed var(--border-color);
+}
+.pm-col-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.pm-col-count {
+    background: var(--border-color);
+    color: var(--text-muted);
+    padding: 1px 8px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+.pm-col-add {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: 0.2s;
+    font-size: 0.85rem;
+}
+.pm-col-add:hover { background: var(--hover-bg); color: var(--primary-color); }
+
+.pm-col-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+.pm-col-body::-webkit-scrollbar { width: 6px; }
+.pm-col-body::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+
+/* Task Card */
+.pm-task-card {
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 11px 13px;
+    cursor: pointer;
+    transition: 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    position: relative;
+    overflow: hidden;
+}
+.pm-task-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0;
+    width: 3px; height: 100%;
+    background: var(--pm-pri-color, var(--text-muted));
+}
+.pm-task-card:hover {
+    border-color: var(--primary-color);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+}
+.pm-task-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 6px;
+    line-height: 1.4;
+}
+.pm-task-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+.pm-task-pri {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-weight: 700;
+}
+.pm-task-due {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+.pm-task-due.overdue { color: var(--danger); font-weight: 700; }
+
+.pm-task-card.dragging { opacity: 0.4; }
+.pm-col-body.drag-over {
+    background: rgba(67,97,238,0.05);
+    border-radius: 8px;
+}
+
+/* ============================================================
+   4) Quick Add Task (Inline)
+============================================================ */
+.pm-quick-add {
+    display: flex;
+    gap: 6px;
+    background: var(--panel-bg);
+    border: 2px dashed var(--primary-color);
+    border-radius: 10px;
+    padding: 8px;
+    margin-top: 4px;
+}
+.pm-quick-add input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 0.85rem;
+    outline: none;
+}
+.pm-quick-add button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    cursor: pointer;
+}
+
+/* ============================================================
+   5) Modals (Project Create / Edit)
+============================================================ */
+.pm-modal-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin-bottom: 18px;
+}
+
+.pm-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.pm-form label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+}
+.pm-form .req { color: var(--danger); }
+.pm-form input[type="text"],
+.pm-form input[type="date"],
+.pm-form select,
+.pm-form textarea {
+    padding: 10px 13px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 0.93rem;
+    outline: none;
+    transition: 0.2s;
+    width: 100%;
+}
+.pm-form input:focus,
+.pm-form select:focus,
+.pm-form textarea:focus { border-color: var(--primary-color); }
+.pm-form textarea { resize: vertical; }
+
+.pm-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+.pm-form-row > div { display: flex; flex-direction: column; gap: 5px; }
+
+.pm-color-picker {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 6px 0;
+}
+.pm-color-picker span {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: 0.2s;
+    border: 2px solid transparent;
+}
+.pm-color-picker span:hover { transform: scale(1.15); }
+.pm-color-picker span.active {
+    border-color: var(--text-main);
+    transform: scale(1.15);
+}
+
+.pm-check {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
+    cursor: pointer;
+    color: var(--text-main);
+}
+.pm-check input { width: 16px; height: 16px; }
+
+/* ============================================================
+   6) Task Detail Slide Panel
+============================================================ */
+.pm-task-panel {
+    position: fixed;
+    top: 0; right: 0;
+    width: 480px;
+    max-width: 90vw;
+    height: 100vh;
+    background: var(--panel-bg);
+    box-shadow: -10px 0 30px rgba(0,0,0,0.12);
+    z-index: 1500;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+.pm-task-panel.open { transform: translateX(0); }
+
+.pm-tp-header {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+.pm-tp-bread {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+}
+.pm-tp-title-input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: var(--text-main);
+    font-size: 1.15rem;
+    font-weight: 700;
+    outline: none;
+    padding: 4px 0;
+    border-bottom: 1px dashed transparent;
+    transition: 0.2s;
+}
+.pm-tp-title-input:focus { border-bottom-color: var(--border-color); }
+.pm-tp-close {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 4px 8px;
+}
+.pm-tp-close:hover { color: var(--text-main); }
+
+.pm-tp-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 18px 22px;
+}
+
+.pm-tp-meta {
+    background: var(--bg-body);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+}
+.pm-tp-meta-row {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 0.85rem;
+}
+.pm-tp-label {
+    color: var(--text-muted);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.pm-tp-meta select,
+.pm-tp-meta input {
+    border: none;
+    background: transparent;
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 0.85rem;
+    padding: 4px 6px;
+    border-radius: 6px;
+    outline: none;
+    cursor: pointer;
+}
+.pm-tp-meta select:hover,
+.pm-tp-meta input:hover { background: var(--panel-bg); }
+
+.pm-tp-section { margin-bottom: 20px; }
+.pm-tp-section h4 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.pm-tp-section textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-main);
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 0.88rem;
+    outline: none;
+    resize: vertical;
+}
+.pm-tp-section textarea:focus { border-color: var(--primary-color); }
+
+.pm-tp-comments {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+    max-height: 240px;
+    overflow-y: auto;
+}
+.pm-tp-comment {
+    background: var(--bg-body);
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+.pm-tp-comment-author {
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 3px;
+    font-size: 0.8rem;
+}
+.pm-tp-comment-text { color: var(--text-main); line-height: 1.5; }
+.pm-tp-comment-time { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; }
+
+.pm-tp-comment-input {
+    background: var(--bg-body);
+    border-radius: 8px;
+    padding: 10px;
+}
+.pm-tp-comment-input textarea {
+    width: 100%;
+    border: none;
+    background: transparent;
+    color: var(--text-main);
+    resize: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 0.85rem;
+}
+.pm-tp-comment-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 6px;
+}
+.btn-text {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.78rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: 0.2s;
+}
+.btn-text:hover { background: var(--hover-bg); color: var(--primary-color); }
+.btn-text.danger:hover { color: var(--danger); }
+
+.pm-tp-footer {
+    padding: 14px 22px;
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-body);
+}
+
+/* ============================================================
+   7) Member Modal
+============================================================ */
+.pm-member-result {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-top: 6px;
+    background: var(--input-bg);
+}
+.pm-member-result:empty { display: none; }
+
+.pm-member-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: 0.15s;
+}
+.pm-member-row:hover { background: var(--hover-bg); }
+.pm-member-row .avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background-size: cover; background-position: center;
+}
+.pm-member-row .pm-mr-info { flex: 1; }
+.pm-member-row .pm-mr-name {
+    font-weight: 600;
+    color: var(--text-main);
+    font-size: 0.88rem;
+}
+.pm-member-row .pm-mr-dept {
+    color: var(--text-muted);
+    font-size: 0.76rem;
+}
+.pm-member-row .pm-mr-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    cursor: pointer;
+}
+.pm-member-row .pm-mr-btn.remove { background: var(--danger); }
+
+.pm-member-list {
+    max-height: 260px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--input-bg);
+    margin-top: 6px;
+}
+.pm-member-list:empty::before {
+    content: '아직 멤버가 없습니다.';
+    display: block;
+    padding: 20px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+/* ============================================================
+   8) Responsive (Mobile fallback)
+============================================================ */
+@media (max-width: 1024px) {
+    .pm-layout { grid-template-columns: 1fr; }
+    .pm-sidebar { max-height: 340px; }
+    .pm-kanban { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+    .pm-kanban { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   9) Page Header
+============================================================ */
+.pm-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+}
+.pm-page-header-title h2 i { color: var(--primary-color); }
+
+.pm-page-header-actions {
+    flex-shrink: 0;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.pm-page-header-actions .btn {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 0;
+    white-space: nowrap;
+}
+
+/* 좁은 화면에서도 버튼은 한 줄로 유지하되, 제목과는 줄바꿈 허용 */
+@media (max-width: 768px) {
+    .pm-page-header {
+        flex-wrap: wrap;
+    }
+    .pm-page-header-title {
+        flex: 1 1 100%;
+    }
+    .pm-page-header-actions {
+        flex: 1 1 100%;
+        justify-content: flex-end;
+    }
+}
+#view-project {
+  margin-left: 10px; /* 사이드바의 실제 너비에 맞춰 조정하세요 */
+  padding: 20px;      /* 상하좌우 내부 여백 */
+  min-height: 100vh;
+  background-color: #f8f9fa; /* 배경색이 끊기지 않게 설정 */
+  transition: margin-left 0.3s ease; /* 사이드바 접힘 기능이 있다면 추가 */
+}
+
+/* 모바일 대응 (사이드바가 사라지는 경우) */
+@media (max-width: 768px) {
+  #view-project {
+    margin-left: 0;
+  }
+}
+/* 댓글 본문의 @멘션 하이라이트 */
+.mention {
+    color: var(--primary-color);
+    background: rgba(67,97,238,0.1);
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+
+/* ============================================================
+   📋 Project Complete & Report
+   ============================================================ */
+
+/* ── 완료 모달 ───────────────────────────── */
+.pc-modal-body {
+  padding: 4px 0 20px;
+}
+
+.pc-preview-banner {
+  background: var(--hover-bg);
+  border-left: 4px solid;
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 18px;
+}
+.pc-preview-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  margin-bottom: 12px;
+}
+.pc-color-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+}
+.pc-preview-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+.pc-preview-stats > div {
+  text-align: center;
+  background: var(--panel-bg);
+  padding: 10px 6px;
+  border-radius: 8px;
+}
+.pc-preview-stats strong {
+  display: block;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+.pc-preview-stats span {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.pc-info-banner {
+  display: flex;
+  gap: 12px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #06d6a015 0%, #4361ee10 100%);
+  border-left: 3px solid #06d6a0;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+.pc-info-banner i {
+  color: #06d6a0;
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+.pc-info-banner strong {
+  display: block;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+.pc-info-banner p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.pc-section {
+  margin-bottom: 16px;
+}
+.pc-section-label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 6px;
+}
+.pc-required {
+  color: var(--danger);
+  margin-left: 4px;
+}
+.pc-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: var(--input-bg);
+  color: var(--text-main);
+  font-family: inherit;
+  line-height: 1.6;
+  outline: none;
+  resize: vertical;
+  box-sizing: border-box;
+}
+.pc-textarea:focus {
+  border-color: var(--primary-color);
+}
+
+.pc-modal-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+  margin-top: 16px;
+}
+
+/* ── 보고서 모달 ──────────────────────────── */
+.pr-action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0 16px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.pr-mode-toggle {
+  display: inline-flex;
+  background: var(--hover-bg);
+  padding: 3px;
+  border-radius: 8px;
+  gap: 2px;
+}
+.pr-mode-toggle button {
+  background: transparent;
+  border: none;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 6px;
+  color: var(--text-muted);
+  font-family: inherit;
+}
+.pr-mode-toggle button.active {
+  background: var(--panel-bg);
+  color: var(--primary-color);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+.pr-download-group {
+  display: flex;
+  gap: 6px;
+}
+.pr-dl-btn {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: 0.15s;
+}
+.pr-dl-btn:hover {
+  background: var(--hover-bg);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+.pr-dl-pdf {
+  background: var(--primary-color);
+  color: #fff;
+  border-color: var(--primary-color);
+}
+.pr-dl-pdf:hover {
+  background: var(--primary-color);
+  filter: brightness(1.1);
+  color: #fff;
+}
+
+/* 보고서 본문 */
+.pr-body {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.pr-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.pr-stat {
+  background: var(--hover-bg);
+  border: 1px solid;
+  border-radius: 10px;
+  padding: 14px 8px;
+  text-align: center;
+}
+.pr-stat strong {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+.pr-stat span {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.pr-section {
+  margin-bottom: 20px;
+}
+.pr-section h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-color);
+}
+.pr-section-body {
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: var(--text-main);
+  padding: 4px 4px 4px 0;
+}
+.pr-section-body p {
+  margin: 0;
+}
+.pr-section-body em {
+  color: var(--text-muted);
+}
+
+.pr-member-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.pr-member-pill {
+  background: var(--hover-bg);
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.82rem;
+  color: var(--text-main);
+}
+
+/* 모바일 */
+@media (max-width: 768px) {
+  .pc-preview-stats,
+  .pr-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .pr-action-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .pr-download-group {
+    flex-wrap: wrap;
+  }
+}

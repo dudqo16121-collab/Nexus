@@ -1,0 +1,342 @@
+/* ════════════════════════════════════════════════════════
+   법인카드 정산 시스템 (Expenses)
+════════════════════════════════════════════════════════ */
+
+/* 통계 위젯 그리드 */
+.expense-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+    margin-bottom: 20px;
+}
+.expense-stat-card {
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    padding: 20px 22px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+.expense-stat-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 4px;
+    background: var(--primary-color);
+}
+.expense-stat-card.es-month::before    { background: var(--primary-color); }
+.expense-stat-card.es-pending::before  { background: var(--warning); }
+.expense-stat-card.es-progress::before { background: var(--success); }
+.expense-stat-card.es-done::before     { background: #2ec27e; }
+
+.expense-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+.expense-stat-card .es-icon {
+    width: 52px; height: 52px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem;
+    color: #fff;
+    flex-shrink: 0;
+}
+.expense-stat-card.es-month    .es-icon { background: linear-gradient(135deg, #4361ee, #5b76ff); }
+.expense-stat-card.es-pending  .es-icon { background: linear-gradient(135deg, #ff9f1c, #ffb947); }
+.expense-stat-card.es-progress .es-icon { background: linear-gradient(135deg, #4cc9f0, #7dd9f5); }
+.expense-stat-card.es-done     .es-icon { background: linear-gradient(135deg, #2ec27e, #48d597); }
+
+.expense-stat-card .es-info { flex: 1; min-width: 0; }
+.expense-stat-card .es-label {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+.expense-stat-card .es-value {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 0;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.expense-stat-card .es-sub {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* 상단 레이아웃: 차트 + 정산 신청 내역 */
+.expense-top-layout {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 20px;
+}
+@media (max-width: 1100px) {
+    .expense-top-layout { grid-template-columns: 1fr; }
+}
+
+/* 정산 신청 카드 (최근 신청 리스트) */
+.expense-report-card {
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--panel-bg);
+}
+.expense-report-card:hover {
+    border-color: var(--primary-color);
+    background: var(--hover-bg);
+    transform: translateX(2px);
+}
+.expense-report-card .erc-status {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.expense-report-card .erc-status.draft       { background: #94a3b8; }
+.expense-report-card .erc-status.pending     { background: var(--warning); }
+.expense-report-card .erc-status.in_progress { background: var(--primary-color); }
+.expense-report-card .erc-status.approved    { background: #2ec27e; }
+.expense-report-card .erc-status.rejected    { background: var(--danger); }
+.expense-report-card .erc-status.canceled    { background: #6b7280; }
+
+.expense-report-card .erc-info { flex: 1; min-width: 0; }
+.expense-report-card .erc-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 3px;
+}
+.expense-report-card .erc-meta {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+.expense-report-card .erc-amount {
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--success);
+    flex-shrink: 0;
+}
+
+/* 필터바 */
+.expense-filter-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 18px;
+}
+.expense-tabs {
+    display: flex;
+    gap: 8px;
+}
+.expense-tab {
+    padding: 10px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    background: transparent;
+    border: 1px solid transparent;
+    transition: 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.expense-tab:hover {
+    background: var(--hover-bg);
+    color: var(--text-main);
+}
+.expense-tab.active {
+    background: rgba(67, 97, 238, 0.1);
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+.expense-tab .tab-count {
+    background: var(--border-color);
+    color: var(--text-muted);
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+.expense-tab.active .tab-count {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+.expense-filters {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.expense-filters select,
+.expense-filters input[type="month"] {
+    padding: 9px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 0.88rem;
+    outline: none;
+    cursor: pointer;
+}
+.expense-filters select:focus,
+.expense-filters input[type="month"]:focus {
+    border-color: var(--primary-color);
+}
+
+/* 지출 테이블 */
+.expense-table {
+    width: 100%;
+}
+.expense-table tbody tr {
+    transition: background 0.15s;
+}
+.expense-table tbody tr:hover {
+    background: var(--hover-bg);
+}
+.expense-table .ex-cat-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    background: rgba(67, 97, 238, 0.1);
+    color: var(--primary-color);
+    border: 1px solid rgba(67,97,238,0.2);
+}
+.expense-table .ex-amount {
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: var(--text-main);
+    text-align: right;
+}
+.expense-table .ex-action-btn {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.82rem;
+    transition: 0.2s;
+}
+.expense-table .ex-action-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: var(--hover-bg);
+}
+
+/* 상태 뱃지 (정산 전용) */
+.ex-status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    border: 1px solid transparent;
+}
+.ex-status-badge.pending      { background: rgba(255,159,28,0.12); color: var(--warning);  border-color: rgba(255,159,28,0.3); }
+.ex-status-badge.submitted    { background: rgba(76,201,240,0.12); color: var(--success);  border-color: rgba(76,201,240,0.3); }
+.ex-status-badge.in_progress  { background: rgba(67,97,238,0.12);  color: var(--primary-color); border-color: rgba(67,97,238,0.3); }
+.ex-status-badge.approved     { background: rgba(46,194,126,0.12); color: #2ec27e; border-color: rgba(46,194,126,0.3); }
+.ex-status-badge.rejected     { background: rgba(247,37,133,0.12); color: var(--danger); border-color: rgba(247,37,133,0.3); }
+.ex-status-badge.draft        { background: rgba(148,163,184,0.15); color: #64748b; border-color: rgba(148,163,184,0.3); }
+.ex-status-badge.canceled     { background: rgba(107,114,128,0.12); color: #6b7280; border-color: rgba(107,114,128,0.3); }
+
+/* 폼 그리드 (모달 내부) */
+.expense-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+.expense-form-field {
+    display: flex;
+    flex-direction: column;
+}
+.expense-form-field.full { grid-column: 1 / -1; }
+.expense-form-field label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+}
+.expense-form-field input,
+.expense-form-field select,
+.expense-form-field textarea {
+    padding: 10px 13px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--input-bg);
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 0.92rem;
+    outline: none;
+    transition: border 0.2s;
+    resize: vertical;
+}
+.expense-form-field input:focus,
+.expense-form-field select:focus,
+.expense-form-field textarea:focus {
+    border-color: var(--primary-color);
+}
+
+/* 정산서 상세 보기 */
+.expense-report-detail-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 14px;
+    background: var(--bg-body);
+    padding: 18px;
+    border-radius: 12px;
+    margin-bottom: 18px;
+}
+.expense-report-detail-meta .rdm-item .lbl {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    display: block;
+}
+.expense-report-detail-meta .rdm-item .val {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+/* 사이드바가 고정(fixed)되어 있다면 메인 섹션에 마진을 추가합니다 */
+#view-expenses {
+  margin-left: 10px; /* 사이드바의 실제 너비에 맞춰 조정하세요 */
+  padding: 20px;      /* 상하좌우 내부 여백 */
+  min-height: 100vh;
+  background-color: #f8f9fa; /* 배경색이 끊기지 않게 설정 */
+  transition: margin-left 0.3s ease; /* 사이드바 접힘 기능이 있다면 추가 */
+}
+
+/* 모바일 대응 (사이드바가 사라지는 경우) */
+@media (max-width: 768px) {
+  #view-expenses {
+    margin-left: 0;
+  }
+}

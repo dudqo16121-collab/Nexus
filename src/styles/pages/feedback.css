@@ -1,0 +1,2102 @@
+/* ============================================================
+   🗳️ FeedbackBox — 익명 피드백 박스
+   Wellbeing 패턴 차용
+   ============================================================ */
+
+#view-feedback {
+  padding: 24px 28px 60px;
+}
+
+/* ── 페이지 헤더 ──────────────────────────── */
+.fb-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.fb-page-header h1 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  margin: 0 0 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+.fb-icon-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #8338ec 0%, #4361ee 100%);
+  color: #fff;
+  border-radius: 12px;
+  font-size: 1.1rem;
+}
+.fb-page-tagline {
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  margin: 0;
+}
+.fb-page-stats {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.fb-stat-pill {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 10px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 70px;
+}
+.fb-stat-pill strong {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+.fb-stat-pill span {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.fb-stat-warn { border-color: #ffd16655; background: #ffd16615; }
+.fb-stat-ok { border-color: #06d6a055; background: #06d6a015; }
+.fb-stat-danger { border-color: #f7258555; background: #f7258515; }
+.fb-stat-danger strong { color: var(--danger); }
+
+/* ── 익명성 안내 ──────────────────────────── */
+.fb-anon-notice {
+  background: linear-gradient(135deg, #4361ee08 0%, #8338ec08 100%);
+  border: 1px solid #8338ec33;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.fb-anon-head {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text-main);
+  font-size: 0.92rem;
+}
+.fb-anon-head i:first-child {
+  color: #8338ec;
+}
+.fb-anon-head strong {
+  flex: 1;
+  text-align: left;
+}
+.fb-anon-toggle {
+  transition: transform 0.3s;
+}
+.fb-anon-toggle.open {
+  transform: rotate(180deg);
+}
+.fb-anon-body {
+  padding: 0 16px 16px 48px;
+  border-top: 1px solid #8338ec22;
+  margin-top: 4px;
+  padding-top: 16px;
+}
+.fb-anon-body ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+.fb-anon-body li {
+  margin-bottom: 8px;
+}
+.fb-anon-body strong {
+  color: var(--text-main);
+}
+.fb-anon-body em {
+  color: #8338ec;
+  font-style: normal;
+  font-weight: 700;
+}
+
+/* ── 탭 ───────────────────────────────────── */
+.fb-tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+.fb-tab {
+  background: transparent;
+  border: none;
+  padding: 12px 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  position: relative;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+}
+.fb-tab:hover {
+  color: var(--text-main);
+}
+.fb-tab.active {
+  color: #8338ec;
+  border-bottom-color: #8338ec;
+}
+.fb-tab-count {
+  background: var(--border-color);
+  color: var(--text-muted);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+.fb-tab.active .fb-tab-count {
+  background: #8338ec;
+  color: #fff;
+}
+.fb-tab-badge {
+  background: var(--danger);
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+/* ── 스텝 인디케이터 ───────────────────────── */
+.fb-stepper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.fb-stepper-dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--hover-bg);
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: 0.3s;
+}
+.fb-stepper-dot.active {
+  background: #8338ec;
+  color: #fff;
+  transform: scale(1.1);
+}
+.fb-stepper-dot.done {
+  background: #06d6a0;
+  color: #fff;
+}
+
+/* ── 작성 카드 ────────────────────────────── */
+.fb-write-card {
+  max-width: 700px;
+  margin: 0 auto;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 32px;
+}
+.fb-step-title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  text-align: center;
+  margin: 0 0 6px;
+  color: var(--text-main);
+}
+.fb-step-sub {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  margin: 0 0 24px;
+}
+.fb-step-nav {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+  gap: 10px;
+}
+
+/* 카테고리 그리드 */
+.fb-cat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.fb-cat-btn {
+  background: var(--hover-bg);
+  border: 2px solid transparent;
+  border-radius: 14px;
+  padding: 18px 12px;
+  cursor: pointer;
+  transition: 0.2s;
+  font-family: inherit;
+}
+.fb-cat-btn:hover {
+  transform: translateY(-3px);
+  border-color: var(--border-color);
+}
+.fb-cat-btn.selected {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+.fb-cat-em {
+  font-size: 2rem;
+  margin-bottom: 6px;
+}
+.fb-cat-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+/* 감정 그룹 */
+.fb-sentiment-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.fb-sent-btn {
+  background: var(--hover-bg);
+  border: 2px solid transparent;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 0.88rem;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text-main);
+  transition: 0.15s;
+}
+.fb-sent-btn:hover { transform: translateY(-1px); }
+.fb-sent-btn.selected { font-weight: 700; }
+
+/* 범위 버튼 */
+.fb-scope-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.fb-scope-btn {
+  flex: 1;
+  background: var(--hover-bg);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: 0.15s;
+}
+.fb-scope-btn.selected {
+  border-color: #8338ec;
+  background: #8338ec15;
+  color: #8338ec;
+}
+
+/* 입력 필드 */
+.fb-field-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 16px 0 8px;
+}
+.fb-field-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  text-align: right;
+}
+.fb-field-hint-inline {
+  font-weight: 400;
+  font-size: 0.78rem;
+}
+.fb-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 0.92rem;
+  background: var(--input-bg);
+  color: var(--text-main);
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+}
+.fb-input:focus {
+  border-color: #8338ec;
+}
+.fb-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 0.92rem;
+  background: var(--input-bg);
+  color: var(--text-main);
+  font-family: inherit;
+  outline: none;
+  resize: vertical;
+  box-sizing: border-box;
+  line-height: 1.6;
+}
+.fb-textarea:focus {
+  border-color: #8338ec;
+}
+
+/* 메타 옵션 */
+.fb-meta-options {
+  background: var(--hover-bg);
+  border-radius: 12px;
+  padding: 16px;
+  margin: 20px 0;
+}
+.fb-meta-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+  color: var(--text-main);
+}
+.fb-meta-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0 0 12px;
+}
+.fb-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  font-size: 0.88rem;
+  color: var(--text-main);
+  cursor: pointer;
+}
+.fb-checkbox input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* 미리보기 */
+.fb-preview {
+  background: var(--hover-bg);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+}
+.fb-preview h4 {
+  font-size: 0.85rem;
+  margin: 0 0 10px;
+  color: var(--text-muted);
+}
+.fb-preview-body strong {
+  font-size: 1rem;
+  display: block;
+  margin-bottom: 6px;
+}
+.fb-preview-body p {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin: 0 0 10px;
+  white-space: pre-wrap;
+}
+.fb-preview-meta {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* ── 버튼 (FeedbackBox와 공유) ─────────────────
+   .ps-btn-primary / .ps-btn-ghost 는 .fb-btn-primary / .fb-btn-ghost 의
+   alias 로만 정의. 실제 스타일은 위쪽 .fb-btn-* 정의 참고. */
+.ps-btn-primary {
+  /* fb-btn-primary 와 사이즈만 다름 */
+  background: linear-gradient(135deg, #8338ec 0%, #4361ee 100%);
+  color: #fff;
+  border: none;
+  padding: 9px 18px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: 0.2s;
+}
+.ps-btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(131, 56, 236, 0.3);
+}
+.ps-btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  padding: 9px 18px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ps-btn-ghost:hover { background: var(--hover-bg); color: var(--text-main); }
+
+/* ── 완료 화면 ────────────────────────────── */
+.fb-done {
+  max-width: 500px;
+  margin: 40px auto;
+  text-align: center;
+  padding: 40px 24px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+}
+.fb-done-icon {
+  font-size: 3.5rem;
+  margin-bottom: 16px;
+}
+.fb-done h2 {
+  font-size: 1.4rem;
+  margin: 0 0 12px;
+}
+.fb-done p {
+  color: var(--text-muted);
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+.fb-done button {
+  margin: 4px;
+}
+
+/* ── 필터바 ───────────────────────────────── */
+.fb-browse {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.fb-filter-bar {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+.fb-filter-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.fb-search-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  background: var(--input-bg);
+  color: var(--text-main);
+  outline: none;
+  font-family: inherit;
+}
+.fb-search-input:focus { border-color: #8338ec; }
+.fb-filter-select {
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  font-size: 0.9rem;
+  background: var(--input-bg);
+  color: var(--text-main);
+  outline: none;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* 카테고리 칩 */
+.fb-cat-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.fb-cat-chip {
+  background: var(--hover-bg);
+  border: 1.5px solid transparent;
+  border-radius: 18px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  color: var(--text-main);
+  transition: 0.15s;
+}
+.fb-cat-chip:hover { transform: translateY(-1px); }
+.fb-cat-chip.active { font-weight: 700; }
+.fb-chip-count {
+  background: var(--border-color);
+  color: var(--text-muted);
+  padding: 1px 7px;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+.fb-cat-chip.active .fb-chip-count {
+  background: currentColor;
+  color: #fff;
+  opacity: 0.85;
+}
+
+/* ── 피드백 카드 ──────────────────────────── */
+.fb-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.fb-card {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 20px;
+  transition: 0.2s;
+}
+.fb-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+.fb-card.mine {
+  border-color: #8338ec55;
+  background: linear-gradient(135deg, var(--panel-bg) 0%, #8338ec06 100%);
+}
+.fb-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.fb-card-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.fb-cat-badge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+}
+.fb-sent-badge {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 10px;
+}
+.fb-mine-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: #8338ec22;
+  color: #8338ec;
+}
+.fb-status-badge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 10px;
+}
+.fb-status-select {
+  padding: 4px 10px;
+  border-radius: 10px;
+  border: 1.5px solid;
+  background: var(--input-bg);
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+}
+.fb-card-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: var(--text-main);
+}
+.fb-card-body {
+  font-size: 0.92rem;
+  line-height: 1.7;
+  color: var(--text-main);
+  margin: 0 0 12px;
+  white-space: pre-wrap;
+}
+.fb-expand-btn {
+  background: none;
+  border: none;
+  color: #8338ec;
+  cursor: pointer;
+  font-weight: 700;
+  font-family: inherit;
+  padding: 0;
+  font-size: 0.88rem;
+}
+.fb-card-meta {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.fb-card-meta i { margin-right: 4px; }
+
+.fb-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+  flex-wrap: wrap;
+}
+.fb-react-btn {
+  background: var(--hover-bg);
+  border: 1px solid transparent;
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+  color: var(--text-main);
+  transition: 0.15s;
+}
+.fb-react-btn:hover { transform: translateY(-1px); }
+.fb-react-btn.liked {
+  background: #f7258518;
+  color: #f72585;
+  border-color: #f7258555;
+  font-weight: 700;
+}
+.fb-react-btn strong { font-weight: 700; }
+.fb-response-count {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.fb-response-count i { margin-right: 4px; }
+.fb-card-tools {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+}
+.fb-tool-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text-muted);
+}
+.fb-tool-btn:hover { background: var(--hover-bg); }
+.fb-tool-danger:hover { color: var(--danger); border-color: var(--danger); }
+.fb-tool-primary {
+  background: #4361ee;
+  color: #fff;
+  border-color: #4361ee;
+}
+.fb-tool-primary:hover {
+  background: #3651d3;
+}
+
+/* 응답 폼 */
+.fb-respond-form {
+  margin-top: 14px;
+  padding: 14px;
+  background: var(--hover-bg);
+  border-radius: 10px;
+}
+.fb-respond-row {
+  margin-bottom: 8px;
+}
+.fb-respond-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+/* 응답 스레드 */
+.fb-response-thread {
+  margin-top: 14px;
+  padding-left: 16px;
+  border-left: 3px solid #4361ee;
+}
+.fb-response {
+  background: var(--hover-bg);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+.fb-response-head {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.fb-response-head strong {
+  color: #4361ee;
+  font-size: 0.85rem;
+}
+.fb-response-name {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.fb-response-time {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+.fb-response p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* 빈 상태 */
+.fb-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+.fb-empty i {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+.fb-empty h3 {
+  font-size: 1.05rem;
+  margin: 0 0 8px;
+  color: var(--text-main);
+}
+.fb-empty p {
+  font-size: 0.9rem;
+  margin: 0;
+}
+.fb-empty-error i { color: var(--danger); }
+
+/* ── 모바일 ───────────────────────────────── */
+@media (max-width: 768px) {
+  .fb-page-header {
+    flex-direction: column;
+  }
+  .fb-cat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .fb-write-card {
+    padding: 20px;
+  }
+  .fb-card-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .fb-card-tools {
+    margin-left: 0;
+  }
+}
+/* ============================================================
+   🗳️ FeedbackBox · Phase 3 — 관리자 인사이트
+   ============================================================ */
+
+.fb-insights {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ── KPI 그리드 ─────────────────────────── */
+.fb-insight-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.fb-insight-kpi {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+}
+.fb-insight-kpi.danger {
+  border-color: #f7258555;
+  background: linear-gradient(135deg, var(--panel-bg), #f7258508);
+}
+.fb-insight-kpi-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.fb-insight-kpi-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 2px;
+}
+.fb-insight-kpi-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+.fb-insight-kpi-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* ── 인사이트 그리드 ─────────────────────── */
+.fb-insights-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.fb-panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.fb-panel-wide {
+  grid-column: 1 / -1;
+}
+.fb-panel-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.fb-panel-head h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.fb-panel-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.fb-panel-body {
+  padding: 20px;
+}
+
+/* ── 빈 상태 (차트 공통) ──────────────────── */
+.fb-chart-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+}
+.fb-chart-empty i {
+  font-size: 2.5rem;
+  opacity: 0.4;
+  margin-bottom: 12px;
+}
+.fb-chart-empty p {
+  font-size: 0.92rem;
+  margin: 0 0 6px;
+}
+.fb-chart-empty small {
+  font-size: 0.78rem;
+  opacity: 0.7;
+}
+
+/* ── 카테고리 도넛 ─────────────────────── */
+.fb-donut-wrap {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.fb-donut-svg {
+  width: 180px;
+  height: 180px;
+  flex-shrink: 0;
+}
+.fb-donut-legend {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 200px;
+}
+.fb-donut-legend-item {
+  display: grid;
+  grid-template-columns: 14px 1fr auto auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+.fb-donut-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+}
+.fb-donut-label {
+  color: var(--text-main);
+}
+.fb-donut-count {
+  font-weight: 700;
+  color: var(--text-main);
+}
+.fb-donut-pct {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  min-width: 36px;
+  text-align: right;
+}
+
+/* ── 감정 트렌드 ───────────────────────── */
+.fb-trend-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.fb-trend-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+.fb-trend-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.fb-trend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+/* ── 키워드 클라우드 ──────────────────────── */
+.fb-keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  justify-content: center;
+  align-items: baseline;
+  padding: 16px;
+  line-height: 1.8;
+}
+.fb-keyword {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 700;
+  padding: 2px 4px;
+  border-radius: 6px;
+  transition: 0.15s;
+}
+.fb-keyword:hover {
+  background: var(--hover-bg);
+  transform: scale(1.05);
+}
+
+/* ── 부서별 신호 ───────────────────────── */
+.fb-dept-signal-note {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  background: var(--hover-bg);
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 14px;
+}
+.fb-dept-signal-note i {
+  color: #8338ec;
+  margin-right: 6px;
+}
+.fb-dept-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.fb-dept-row-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 0.9rem;
+}
+.fb-dept-row-head strong {
+  margin-right: 8px;
+}
+.fb-dept-total {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.fb-dept-mood {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.fb-dept-bar {
+  display: flex;
+  height: 10px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--hover-bg);
+}
+.fb-dept-bar-seg {
+  height: 100%;
+  transition: width 0.4s ease;
+}
+.fb-dept-bar-meta {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+/* ── 응답 대기 큐 ───────────────────────── */
+.fb-queue-summary {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.fb-queue-pill {
+  padding: 6px 14px;
+  border-radius: 18px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+.fb-queue-pill-danger {
+  background: #f7258518;
+  color: #f72585;
+}
+.fb-queue-pill-warn {
+  background: #ffd16622;
+  color: #d97706;
+}
+.fb-queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.fb-queue-item {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 14px;
+  background: var(--hover-bg);
+  border-radius: 10px;
+  border-left: 4px solid;
+}
+.fb-queue-danger { border-left-color: #f72585; }
+.fb-queue-warning { border-left-color: #ffd166; }
+.fb-queue-age {
+  text-align: center;
+  flex-shrink: 0;
+  min-width: 60px;
+}
+.fb-queue-age strong {
+  display: block;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+.fb-queue-age span {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.fb-queue-body {
+  flex: 1;
+  min-width: 0;
+}
+.fb-queue-tags {
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.fb-queue-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--text-main);
+}
+.fb-queue-preview {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── 모바일 ─────────────────────────────── */
+@media (max-width: 1024px) {
+  .fb-insight-kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .fb-insights-grid {
+    grid-template-columns: 1fr;
+  }
+  .fb-panel-wide {
+    grid-column: auto;
+  }
+}
+@media (max-width: 640px) {
+  .fb-insight-kpi-grid {
+    grid-template-columns: 1fr;
+  }
+  .fb-donut-wrap {
+    flex-direction: column;
+  }
+  .fb-queue-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+/* ============================================================
+   📋 Pulse Surveys (Phase 5)
+   ============================================================ */
+
+.ps-tab {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.ps-tab-toggle {
+  display: inline-flex;
+  background: var(--hover-bg);
+  border-radius: 10px;
+  padding: 4px;
+  margin-bottom: 20px;
+}
+.ps-tab-toggle button {
+  background: transparent;
+  border: none;
+  padding: 8px 16px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 8px;
+  font-family: inherit;
+  color: var(--text-muted);
+}
+.ps-tab-toggle button.active {
+  background: var(--panel-bg);
+  color: #8338ec;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* ── 섹션 ───────────────────────────────────── */
+.ps-section { margin-bottom: 28px; }
+.ps-section-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: var(--text-main);
+}
+
+/* ── 카드 그리드 ────────────────────────────── */
+.ps-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+.ps-card {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 18px;
+  transition: 0.2s;
+}
+.ps-card:hover { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06); }
+.ps-card.responded { opacity: 0.85; }
+.ps-card-head {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.ps-status-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 10px;
+}
+.ps-card-deadline {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 10px;
+  background: #ffd16622;
+  color: #d97706;
+}
+.ps-responded-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 10px;
+  background: #06d6a022;
+  color: #06d6a0;
+}
+.ps-card-title {
+  font-size: 1.02rem;
+  font-weight: 700;
+  margin: 0 0 6px;
+}
+.ps-card-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+.ps-card-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.ps-card-meta i { margin-right: 4px; }
+.ps-card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ── 버튼 ───────────────────────────────────── */
+.ps-btn-primary {
+  background: linear-gradient(135deg, #8338ec 0%, #4361ee 100%);
+  color: #fff;
+  border: none;
+  padding: 9px 18px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: 0.2s;
+}
+.ps-btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(131, 56, 236, 0.3);
+}
+.ps-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.ps-btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  padding: 9px 18px;
+  border-radius: 10px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ps-btn-ghost:hover { background: var(--hover-bg); color: var(--text-main); }
+
+/* ── 모달 ───────────────────────────────────── */
+.ps-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.ps-modal {
+  background: var(--panel-bg);
+  border-radius: 16px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.ps-modal-wide { max-width: 900px; }
+.ps-modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+.ps-modal-head h2 {
+  font-size: 1.2rem;
+  margin: 0 0 4px;
+}
+.ps-modal-head p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+.ps-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px 8px;
+}
+.ps-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+.ps-modal-foot {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.ps-modal-anon-notice {
+  background: linear-gradient(135deg, #4361ee08 0%, #8338ec08 100%);
+  border-left: 3px solid #8338ec;
+  padding: 10px 16px;
+  font-size: 0.82rem;
+  color: var(--text-main);
+}
+.ps-modal-anon-notice i { color: #8338ec; margin-right: 6px; }
+
+/* ── 입력 ───────────────────────────────────── */
+.ps-input,
+.ps-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  font-size: 0.9rem;
+  background: var(--input-bg);
+  color: var(--text-main);
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+}
+.ps-input:focus, .ps-textarea:focus { border-color: #8338ec; }
+.ps-textarea { resize: vertical; line-height: 1.6; }
+
+/* ── 응답 화면 - 질문 ────────────────────────── */
+.ps-question { margin-bottom: 24px; }
+.ps-question-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--text-main);
+}
+.ps-question-num {
+  color: #8338ec;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+.ps-required { color: var(--danger); }
+
+/* 척도 */
+.ps-scale {}
+.ps-scale-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.ps-scale-buttons {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.ps-scale-btn {
+  flex: 1;
+  min-width: 38px;
+  height: 40px;
+  border: 1.5px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--input-bg);
+  cursor: pointer;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-family: inherit;
+  transition: 0.15s;
+}
+.ps-scale-btn:hover {
+  border-color: #8338ec;
+  color: #8338ec;
+}
+.ps-scale-btn.selected {
+  background: #8338ec;
+  border-color: #8338ec;
+  color: #fff;
+}
+
+/* 객관식 */
+.ps-choice {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ps-choice-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border-color);
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: 0.15s;
+}
+.ps-choice-item:hover { background: var(--hover-bg); }
+.ps-choice-item.selected {
+  border-color: #8338ec;
+  background: #8338ec10;
+}
+.ps-choice-item input { margin: 0; }
+
+/* ── 결과 화면 ───────────────────────────────── */
+.ps-result-block {
+  background: var(--hover-bg);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.ps-result-title {
+  font-size: 0.95rem;
+  margin: 0 0 12px;
+  color: var(--text-main);
+}
+
+.ps-scale-result {}
+.ps-scale-summary {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 14px;
+}
+.ps-stat-label {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.ps-stat-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #8338ec;
+}
+.ps-scale-distribution {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 100px;
+}
+.ps-scale-bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.ps-scale-bar-wrap {
+  width: 100%;
+  height: 70px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.ps-scale-bar {
+  width: 60%;
+  min-height: 2px;
+  background: linear-gradient(180deg, #8338ec, #4361ee);
+  border-radius: 4px 4px 0 0;
+  transition: height 0.4s ease;
+}
+.ps-scale-bar-num {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.ps-scale-bar-cnt {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.ps-choice-result {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ps-choice-bar-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 100px;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+}
+.ps-choice-bar-label {
+  color: var(--text-main);
+}
+.ps-choice-bar-track {
+  background: var(--panel-bg);
+  height: 24px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.ps-choice-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #8338ec, #4361ee);
+  transition: width 0.4s ease;
+}
+.ps-choice-bar-count strong {
+  font-weight: 700;
+  color: var(--text-main);
+}
+.ps-choice-bar-count span {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.ps-text-result {}
+.ps-text-result-count {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0 0 10px;
+}
+.ps-text-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.ps-text-item {
+  background: var(--panel-bg);
+  padding: 10px 14px;
+  border-radius: 8px;
+  display: flex;
+  gap: 10px;
+}
+.ps-text-item i {
+  color: #8338ec;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.ps-text-item p {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.ps-dept-pill-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.ps-dept-pill {
+  background: var(--panel-bg);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.82rem;
+}
+.ps-dept-pill strong {
+  color: #8338ec;
+  margin-left: 4px;
+}
+.ps-dept-note {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 8px 0 0;
+}
+
+/* ── 에디터 ─────────────────────────────────── */
+.ps-editor-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 14px 0 6px;
+}
+.ps-editor-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.ps-editor-templates { margin-bottom: 18px; }
+.ps-template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+.ps-template-btn {
+  background: var(--hover-bg);
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ps-template-btn:hover {
+  border-color: #8338ec;
+  background: #8338ec10;
+}
+.ps-template-btn strong { font-size: 0.9rem; color: var(--text-main); }
+.ps-template-btn span { font-size: 0.78rem; color: var(--text-muted); }
+
+.ps-question-editor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ps-q-editor {
+  background: var(--hover-bg);
+  border-radius: 10px;
+  padding: 14px;
+}
+.ps-q-editor-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.ps-q-editor-num {
+  font-weight: 800;
+  color: #8338ec;
+  font-size: 0.9rem;
+}
+.ps-q-editor-type {
+  font-size: 0.78rem;
+  background: var(--panel-bg);
+  padding: 2px 10px;
+  border-radius: 10px;
+  color: var(--text-muted);
+}
+.ps-q-editor-tools {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+}
+.ps-q-editor-tools button {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-family: inherit;
+}
+.ps-q-editor-tools button:hover:not(:disabled) {
+  background: var(--panel-bg);
+  color: var(--text-main);
+}
+.ps-q-editor-tools button:disabled { opacity: 0.3; cursor: not-allowed; }
+.ps-tool-danger:hover { color: var(--danger); border-color: var(--danger); }
+
+.ps-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.ps-scale-editor, .ps-choice-editor { margin-top: 10px; }
+.ps-preset-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+.ps-preset-btn {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  padding: 6px 12px;
+  font-size: 0.78rem;
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text-main);
+}
+.ps-preset-btn:hover {
+  background: #8338ec10;
+  border-color: #8338ec;
+  color: #8338ec;
+}
+
+.ps-option-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.ps-option-row button {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+.ps-option-row button:disabled { opacity: 0.3; cursor: not-allowed; }
+
+.ps-add-question-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+/* ── 관리자 테이블 ───────────────────────────── */
+.ps-admin-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.ps-admin-head h3 { margin: 0; }
+.ps-admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.ps-admin-table th,
+.ps-admin-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-color);
+  text-align: left;
+  vertical-align: top;
+  font-size: 0.88rem;
+}
+.ps-admin-table th {
+  background: var(--hover-bg);
+  font-weight: 700;
+  color: var(--text-main);
+  font-size: 0.82rem;
+}
+.ps-admin-table tr:last-child td { border-bottom: none; }
+.ps-admin-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 4px 0 0;
+}
+.ps-admin-dates {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.ps-admin-actions {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.ps-btn-mini {
+  background: var(--hover-bg);
+  border: 1px solid var(--border-color);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  cursor: pointer;
+  font-family: inherit;
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.ps-btn-mini:hover { background: var(--panel-bg); }
+.ps-btn-mini-primary {
+  background: #06d6a0;
+  border-color: #06d6a0;
+  color: #fff;
+}
+.ps-btn-mini-primary:hover { background: #05b389; }
+.ps-btn-mini-danger:hover {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+.ps-admin-empty {
+  text-align: center;
+  padding: 30px;
+  color: var(--text-muted);
+}
+
+/* ── 빈 상태 ────────────────────────────────── */
+.ps-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+.ps-empty i {
+  font-size: 3rem;
+  opacity: 0.4;
+  margin-bottom: 16px;
+}
+.ps-empty p {
+  font-size: 0.95rem;
+  margin: 0 0 6px;
+  color: var(--text-main);
+}
+.ps-empty small {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.ps-empty-error i { color: var(--danger); }
+.ps-empty-small {
+  padding: 20px;
+  background: var(--hover-bg);
+  border-radius: 10px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* ── 모바일 ─────────────────────────────────── */
+@media (max-width: 768px) {
+  .ps-modal-wide { max-width: 95vw; }
+  .ps-card-grid { grid-template-columns: 1fr; }
+  .ps-choice-bar-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .ps-admin-table { font-size: 0.78rem; }
+  .ps-admin-table th,
+  .ps-admin-table td { padding: 8px; }
+}
+/* ============================================================
+   🗳️ FeedbackBox — 수정 모달
+   ============================================================ */
+
+.fb-edit-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fbEditFadeIn 0.15s ease-out;
+}
+
+@keyframes fbEditFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fb-edit-modal {
+  background: var(--panel-bg);
+  border-radius: 16px;
+  max-width: 700px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  animation: fbEditSlideIn 0.2s ease-out;
+}
+
+@keyframes fbEditSlideIn {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.fb-edit-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color);
+}
+.fb-edit-head h2 {
+  font-size: 1.15rem;
+  margin: 0 0 4px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.fb-edit-head h2 i {
+  color: #8338ec;
+}
+.fb-edit-head p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+.fb-edit-close {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-family: inherit;
+}
+.fb-edit-close:hover {
+  background: var(--hover-bg);
+  color: var(--text-main);
+}
+
+.fb-edit-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+}
+
+.fb-edit-cat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.fb-edit-cat-btn {
+  background: var(--hover-bg);
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  transition: 0.15s;
+}
+.fb-edit-cat-btn:hover {
+  transform: translateY(-1px);
+}
+.fb-edit-cat-btn.selected {
+  font-weight: 700;
+}
+
+.fb-edit-notice {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #4361ee08 0%, #8338ec08 100%);
+  border-left: 3px solid #8338ec;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+.fb-edit-notice i {
+  color: #8338ec;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.fb-edit-notice strong {
+  display: block;
+  font-size: 0.88rem;
+  margin-bottom: 4px;
+  color: var(--text-main);
+}
+.fb-edit-notice p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.fb-edit-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-color);
+  background: var(--panel-bg);
+}
+
+/* 모바일 */
+@media (max-width: 640px) {
+  .fb-edit-backdrop { padding: 0; }
+  .fb-edit-modal {
+    max-height: 100vh;
+    border-radius: 0;
+  }
+  .fb-edit-cat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

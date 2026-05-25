@@ -1,0 +1,477 @@
+/* ============================================================
+   📅 일정 관리 페이지
+   ============================================================ */
+
+#view-schedule {
+  padding: 20px 28px;
+}
+
+/* ── 헤더 ─────────────────────────────────── */
+.schedule-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.schedule-header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.schedule-header-left h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0;
+  color: var(--text-main);
+}
+.schedule-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.schedule-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.schedule-nav button {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: 0.15s;
+}
+.schedule-nav button:hover { background: var(--hover-bg); color: var(--text-main); }
+.schedule-today-btn {
+  width: auto !important;
+  padding: 0 12px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+.schedule-period {
+  font-weight: 700;
+  color: var(--text-main);
+  margin-left: 10px;
+  font-size: 1rem;
+}
+
+.schedule-view-switch {
+  display: inline-flex;
+  background: var(--hover-bg);
+  border-radius: 10px;
+  padding: 4px;
+}
+.schedule-view-btn {
+  background: transparent;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: 0.15s;
+}
+.schedule-view-btn.active {
+  background: var(--panel-bg);
+  color: var(--primary-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* ── 레이아웃 ─────────────────────────────── */
+.schedule-layout {
+  display: flex;
+  gap: 16px;
+  align-items: stretch;
+  min-height: calc(100vh - 200px);
+}
+.schedule-main {
+  flex: 1;
+  min-width: 0;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* ── 좌측 사이드바 ────────────────────────── */
+.schedule-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.schedule-mini-cal,
+.schedule-filter {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 14px;
+}
+.schedule-mini-cal-header {
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-main);
+  margin-bottom: 10px;
+}
+.schedule-mini-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.schedule-mini-cal-dayname {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 4px 0;
+}
+.schedule-mini-cal-cell {
+  background: transparent;
+  border: none;
+  font-size: 0.78rem;
+  color: var(--text-main);
+  padding: 6px 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.schedule-mini-cal-cell:hover:not(:disabled) { background: var(--hover-bg); }
+.schedule-mini-cal-cell.today {
+  background: var(--primary-color);
+  color: #fff;
+  font-weight: 700;
+}
+.schedule-mini-cal-cell.selected:not(.today) {
+  border: 1.5px solid var(--primary-color);
+  font-weight: 700;
+}
+
+.schedule-filter h4 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 0 0 10px;
+  letter-spacing: 0.5px;
+}
+.schedule-filter-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.schedule-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  transition: 0.15s;
+}
+.schedule-filter-item.active { color: var(--text-main); }
+.schedule-filter-item input[type="checkbox"] { cursor: pointer; }
+.schedule-filter-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+/* ── 월 뷰 ────────────────────────────────── */
+.schedule-month-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.schedule-month-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: var(--hover-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+.schedule-month-dayname {
+  padding: 10px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.schedule-month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  flex: 1;
+}
+.schedule-month-cell {
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  padding: 6px 8px;
+  min-height: 90px;
+  cursor: pointer;
+  transition: 0.1s;
+  overflow: hidden;
+}
+.schedule-month-cell:nth-child(7n) { border-right: none; }
+.schedule-month-cell:hover { background: var(--hover-bg); }
+.schedule-month-cell.outside { background: var(--bg-body); opacity: 0.6; }
+.schedule-month-cell.today {
+  background: rgba(67, 97, 238, 0.06);
+}
+.schedule-month-cell.today .schedule-month-date {
+  background: var(--primary-color);
+  color: #fff !important;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+}
+.schedule-month-date {
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+}
+.schedule-month-events {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* ── 이벤트 pill (월/주 종일) ──────────────── */
+.schedule-event-pill {
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.schedule-event-pill:hover { opacity: 0.85; }
+.schedule-event-time { opacity: 0.85; font-weight: 500; }
+.schedule-event-more {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  padding: 1px 6px;
+  font-weight: 600;
+}
+
+/* ── 주 뷰 ────────────────────────────────── */
+.schedule-week-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+.schedule-week-header {
+  display: grid;
+  grid-template-columns: 60px repeat(7, 1fr);
+  border-bottom: 1px solid var(--border-color);
+  background: var(--hover-bg);
+}
+.schedule-week-time-col-header,
+.schedule-week-day-header {
+  padding: 10px 6px;
+  text-align: center;
+  border-right: 1px solid var(--border-color);
+}
+.schedule-week-day-header:last-child { border-right: none; }
+.schedule-week-day-header.today { background: rgba(67, 97, 238, 0.08); }
+.schedule-week-dayname { font-size: 0.75rem; font-weight: 600; }
+.schedule-week-date { font-size: 1.1rem; font-weight: 700; margin-top: 2px; }
+
+.schedule-week-allday {
+  display: grid;
+  grid-template-columns: 60px repeat(7, 1fr);
+  border-bottom: 1px solid var(--border-color);
+  min-height: 30px;
+}
+.schedule-week-allday-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  padding: 4px;
+  text-align: center;
+  border-right: 1px solid var(--border-color);
+}
+.schedule-week-allday-cell {
+  padding: 2px 4px;
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.schedule-week-allday-cell:last-child { border-right: none; }
+
+.schedule-week-grid {
+  display: grid;
+  grid-template-columns: 60px repeat(7, 1fr);
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+}
+.schedule-week-time-col { border-right: 1px solid var(--border-color); }
+.schedule-week-time-label {
+  height: 48px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 2px;
+}
+.schedule-week-day-col {
+  border-right: 1px solid var(--border-color);
+  position: relative;
+}
+.schedule-week-day-col:last-child { border-right: none; }
+.schedule-week-slot {
+  height: 48px;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  position: relative;
+  transition: 0.1s;
+}
+.schedule-week-slot:hover { background: var(--hover-bg); }
+
+.schedule-event-block {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  color: #fff;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 0.72rem;
+  cursor: pointer;
+  overflow: hidden;
+  z-index: 1;
+}
+.schedule-event-block strong { display: block; }
+.schedule-event-block-time { font-size: 0.65rem; opacity: 0.85; }
+
+/* ── 일 뷰 ────────────────────────────────── */
+.schedule-day-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+.schedule-day-allday {
+  display: flex;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--hover-bg);
+  align-items: center;
+}
+.schedule-day-allday-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+.schedule-day-allday-list { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.schedule-day-grid {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+}
+.schedule-day-time-col {
+  border-right: 1px solid var(--border-color);
+}
+.schedule-day-time-label {
+  height: 60px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 2px;
+}
+.schedule-day-content { position: relative; }
+.schedule-day-slot {
+  height: 60px;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: 0.1s;
+}
+.schedule-day-slot:hover { background: var(--hover-bg); }
+
+.schedule-day-event {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  z-index: 1;
+  overflow: hidden;
+}
+.schedule-day-event strong { display: block; font-size: 0.95rem; }
+.schedule-day-event span {
+  display: block;
+  font-size: 0.78rem;
+  opacity: 0.9;
+  margin-top: 2px;
+}
+.schedule-day-event p {
+  font-size: 0.78rem;
+  opacity: 0.85;
+  margin: 4px 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── 모달 카테고리 픽커 ───────────────────── */
+.schedule-category-picker {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.schedule-cat-chip {
+  padding: 6px 12px;
+  border-radius: 16px;
+  border: 1px solid;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.15s;
+  background: transparent;
+}
+.schedule-cat-chip:hover:not(:disabled) { opacity: 0.85; }
+.schedule-cat-chip:disabled { cursor: not-allowed; opacity: 0.5; }
+
+/* ── 다크모드 보정 ────────────────────────── */
+body.dark-mode .schedule-month-cell.today {
+  background: rgba(67, 97, 238, 0.12);
+}
+body.dark-mode .schedule-week-day-header.today {
+  background: rgba(67, 97, 238, 0.12);
+}
+
+/* ── 모바일 ───────────────────────────────── */
+@media (max-width: 1024px) {
+  .schedule-layout { flex-direction: column; }
+  .schedule-sidebar { width: 100%; flex-direction: row; }
+  .schedule-mini-cal, .schedule-filter { flex: 1; }
+}
+@media (max-width: 640px) {
+  .schedule-header-left h2 { font-size: 1.2rem; }
+  .schedule-period { display: none; }
+  .schedule-sidebar { flex-direction: column; }
+  .schedule-month-cell { min-height: 60px; padding: 4px; }
+  .schedule-month-events .schedule-event-pill { font-size: 0.65rem; }
+}

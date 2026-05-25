@@ -1,0 +1,934 @@
+/* ════════════════════════════════════════════════════════
+   관리자 페이지 (Admin)
+════════════════════════════════════════════════════════ */
+
+.tab-btn {
+    padding: 12px 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    transition: 0.3s;
+    border-bottom: 3px solid transparent;
+}
+.tab-btn.active { color: var(--primary-color); border-bottom: 3px solid var(--primary-color); }
+.tab-btn:hover:not(.active) { color: var(--text-main); }
+
+.log-box {
+    background: #1e1e2d;
+    color: #00ff00;
+    font-family: 'Courier New', Courier, monospace;
+    padding: 15px;
+    height: 200px;
+    overflow-y: auto;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+.log-box p { margin-bottom: 5px; }
+.log-error { color: #ff4c4c; }
+.log-warn { color: #ffb84d; }
+#view-admin {
+  margin-left: 10px; /* 사이드바의 실제 너비에 맞춰 조정하세요 */
+  padding: 20px;      /* 상하좌우 내부 여백 */
+  min-height: 100vh;
+  background-color: #f8f9fa; /* 배경색이 끊기지 않게 설정 */
+  transition: margin-left 0.3s ease; /* 사이드바 접힘 기능이 있다면 추가 */
+}
+
+/* 모바일 대응 (사이드바가 사라지는 경우) */
+@media (max-width: 768px) {
+  #view-admin {
+    margin-left: 0;
+  }
+}
+
+
+/* ════════════════════════════════════════════
+   시스템 로그 페이지
+   ════════════════════════════════════════════ */
+
+/* 통계 카드 */
+.syslog-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.syslog-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+.syslog-stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.syslog-stat-value {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1.1;
+}
+.syslog-stat-label {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* 필터 */
+.syslog-filters {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+.syslog-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.syslog-filter-group label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.syslog-filter-group select,
+.syslog-filter-group input {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-2);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.88rem;
+  outline: none;
+}
+.syslog-filter-group select:focus,
+.syslog-filter-group input:focus {
+  border-color: var(--primary-color);
+}
+.syslog-filter-actions {
+  display: flex;
+  gap: 6px;
+}
+.syslog-icon-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.15s;
+}
+.syslog-icon-btn:hover {
+  background: var(--hover-bg);
+  color: var(--text-main);
+}
+.syslog-icon-btn-danger:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+/* 테이블 */
+.syslog-table-wrap {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.syslog-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.syslog-table thead {
+  background: var(--bg-2);
+}
+.syslog-table th {
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border-color);
+}
+.syslog-table td {
+  padding: 13px 14px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.88rem;
+  color: var(--text-main);
+  vertical-align: middle;
+}
+.syslog-row {
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.syslog-row:hover {
+  background: var(--hover-bg);
+}
+.syslog-row-error,
+.syslog-row-critical {
+  background: rgba(239, 68, 68, 0.04);
+}
+body.dark-mode .syslog-row-error,
+body.dark-mode .syslog-row-critical {
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.syslog-level-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+.syslog-msg {
+  font-weight: 500;
+  max-width: 500px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.syslog-actor {
+  color: var(--text-muted);
+  font-size: 0.83rem;
+}
+.syslog-time {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+.syslog-del-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: 0.15s;
+}
+.syslog-del-btn:hover {
+  color: var(--danger);
+  background: rgba(247, 37, 133, 0.08);
+}
+
+.syslog-empty {
+  padding: 80px 20px;
+  text-align: center;
+  color: var(--text-muted);
+}
+.syslog-empty i {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 14px;
+  opacity: 0.4;
+}
+
+.syslog-more-btn {
+  background: var(--bg-2);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 8px 22px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: 0.15s;
+}
+.syslog-more-btn:hover:not(:disabled) {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+.syslog-more-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 상세 모달 */
+.syslog-detail-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 9990;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  animation: cmdFadeIn 0.15s ease-out;
+}
+.syslog-detail {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+}
+.syslog-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border-color);
+}
+.syslog-detail-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.syslog-detail-body {
+  padding: 20px 22px;
+  overflow-y: auto;
+}
+.syslog-detail-row {
+  display: flex;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+.syslog-detail-row:last-child { border-bottom: none; }
+.syslog-detail-row label {
+  flex-shrink: 0;
+  width: 100px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.syslog-detail-row span {
+  flex: 1;
+  font-size: 0.92rem;
+  color: var(--text-main);
+  word-break: break-word;
+}
+.syslog-detail-meta {
+  background: var(--bg-2);
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  margin: 0;
+  overflow-x: auto;
+  color: var(--text-main);
+}
+/* ════════════════════════════════════════════
+   직원 관리 페이지
+   ════════════════════════════════════════════ */
+
+/* 통계 */
+.emp-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.emp-stat {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+.emp-stat-icon {
+  width: 44px; height: 44px;
+  border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+.emp-stat-value {
+  font-size: 1.4rem; font-weight: 800;
+  color: var(--text-main); line-height: 1.1;
+}
+.emp-stat-label {
+  font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;
+}
+
+/* 툴바 */
+.emp-toolbar {
+  display: flex; gap: 10px; align-items: center;
+  margin-bottom: 16px; padding: 12px 14px;
+  background: var(--panel-bg); border: 1px solid var(--border-color);
+  border-radius: 12px; flex-wrap: wrap;
+}
+.emp-search {
+  flex: 1; min-width: 220px;
+  position: relative;
+}
+.emp-search i {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--text-muted); font-size: 0.88rem; pointer-events: none;
+}
+.emp-search input {
+  width: 100%; padding: 9px 12px 9px 36px;
+  border: 1px solid var(--border-color); border-radius: 8px;
+  background: var(--bg-2); color: var(--text-main);
+  font-family: inherit; font-size: 0.88rem; outline: none;
+  box-sizing: border-box;
+}
+.emp-search input:focus { border-color: var(--primary-color); }
+.emp-toolbar select {
+  padding: 9px 12px;
+  border: 1px solid var(--border-color); border-radius: 8px;
+  background: var(--bg-2); color: var(--text-main);
+  font-family: inherit; font-size: 0.85rem; outline: none;
+  cursor: pointer;
+}
+.emp-icon-btn {
+  background: transparent; border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  width: 36px; height: 36px; border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: 0.15s;
+}
+.emp-icon-btn:hover {
+  background: var(--hover-bg); color: var(--text-main);
+}
+
+/* 일괄 작업 바 */
+.emp-bulk-bar {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #4361ee15, #8338ec15);
+  border: 1px solid rgba(67, 97, 238, 0.3);
+  border-radius: 10px;
+  margin-bottom: 14px;
+  font-size: 0.88rem; font-weight: 600;
+}
+.emp-bulk-bar > span:first-child {
+  color: var(--primary-color);
+}
+.emp-bulk-btn {
+  background: var(--primary-color); color: #fff;
+  border: none; padding: 7px 14px; border-radius: 7px;
+  font-family: inherit; font-size: 0.82rem; font-weight: 600;
+  cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.emp-bulk-btn:hover { opacity: 0.9; }
+.emp-bulk-btn-ghost {
+  background: transparent; color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+.emp-bulk-btn-ghost:hover { color: var(--text-main); }
+
+/* 테이블 */
+.emp-table-wrap {
+  background: var(--panel-bg); border: 1px solid var(--border-color);
+  border-radius: 12px; overflow: hidden;
+}
+.emp-table { width: 100%; border-collapse: collapse; }
+.emp-table thead { background: var(--bg-2); }
+.emp-table th {
+  padding: 12px 14px; text-align: left;
+  font-size: 0.76rem; font-weight: 700;
+  color: var(--text-muted); text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid var(--border-color);
+}
+.emp-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.88rem; color: var(--text-main);
+  vertical-align: middle;
+}
+.emp-table tr.selected { background: rgba(67, 97, 238, 0.06); }
+.emp-table tr:hover:not(.selected) { background: var(--hover-bg); }
+
+.emp-name {
+  display: flex; align-items: center; gap: 12px;
+}
+.emp-fullname { font-weight: 600; }
+.emp-email {
+  font-size: 0.78rem; color: var(--text-muted);
+}
+.emp-position {
+  font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;
+}
+.emp-phone {
+  font-family: ui-monospace, monospace; font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* 배지 (클릭 가능) */
+.emp-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 6px;
+  font-size: 0.78rem; font-weight: 600;
+  border: 1px solid transparent; cursor: pointer;
+  font-family: inherit; transition: 0.15s;
+}
+.emp-badge:hover { transform: translateY(-1px); }
+.emp-badge-admin {
+  background: rgba(67, 97, 238, 0.12);
+  color: var(--primary-color);
+  border-color: rgba(67, 97, 238, 0.25);
+}
+.emp-badge-user {
+  background: var(--bg-2); color: var(--text-muted);
+  border-color: var(--border-color);
+}
+.emp-badge-active {
+  background: rgba(6, 214, 160, 0.12);
+  color: #06d6a0;
+  border-color: rgba(6, 214, 160, 0.25);
+}
+.emp-badge-inactive {
+  background: rgba(247, 37, 133, 0.08);
+  color: var(--danger);
+  border-color: rgba(247, 37, 133, 0.2);
+}
+
+.emp-action-btn {
+  background: transparent; border: 1px solid var(--border-color);
+  color: var(--text-muted); width: 30px; height: 30px;
+  border-radius: 6px; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: 0.15s;
+}
+.emp-action-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+.emp-empty {
+  padding: 80px 20px; text-align: center; color: var(--text-muted);
+}
+.emp-empty i {
+  font-size: 3rem; display: block; margin-bottom: 14px; opacity: 0.4;
+}
+
+/* 일괄 부서 변경 다이얼로그 */
+.emp-dialog-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 9990;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  animation: cmdFadeIn 0.15s ease-out;
+}
+.emp-dialog {
+  background: var(--panel-bg); border: 1px solid var(--border-color);
+  border-radius: 14px; padding: 24px 26px;
+  width: 100%; max-width: 420px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+}
+.emp-dialog h3 {
+  margin: 0 0 6px; font-size: 1.1rem; font-weight: 700;
+}
+.emp-dialog p {
+  margin: 0 0 16px; color: var(--text-muted); font-size: 0.88rem;
+}
+.emp-dialog input {
+  width: 100%; padding: 10px 12px;
+  border: 1px solid var(--border-color); border-radius: 8px;
+  background: var(--bg-2); color: var(--text-main);
+  font-family: inherit; font-size: 0.92rem; outline: none;
+  box-sizing: border-box;
+}
+.emp-dialog input:focus { border-color: var(--primary-color); }
+.emp-dialog-actions {
+  display: flex; gap: 8px; justify-content: flex-end;
+  margin-top: 16px;
+}
+.btn-ghost {
+  background: transparent; border: 1px solid var(--border-color);
+  color: var(--text-muted); padding: 8px 16px;
+  border-radius: 8px; cursor: pointer;
+  font-family: inherit; font-size: 0.88rem;
+}
+.btn-ghost:hover { color: var(--text-main); }
+
+/* 직원 편집 모달 */
+.emp-edit-body {
+  padding: 4px 0;
+}
+.emp-edit-header {
+  display: flex; align-items: center; gap: 16px;
+  padding-bottom: 16px; margin-bottom: 18px;
+  border-bottom: 1px solid var(--border-color);
+}
+.emp-edit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+.emp-edit-field {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.emp-edit-field label {
+  font-size: 0.78rem; font-weight: 600;
+  color: var(--text-muted);
+}
+.emp-edit-field input {
+  padding: 9px 12px;
+  border: 1px solid var(--border-color); border-radius: 8px;
+  background: var(--bg-2); color: var(--text-main);
+  font-family: inherit; font-size: 0.9rem; outline: none;
+}
+.emp-edit-field input:focus { border-color: var(--primary-color); }
+.emp-edit-actions {
+  display: flex; gap: 8px; justify-content: flex-end;
+  margin-top: 22px;
+}
+@media (max-width: 600px) {
+  .emp-edit-grid { grid-template-columns: 1fr; }
+}
+
+
+/* ════════════════════════════════════════════
+   /admin 페이지 — 흰 글씨 문제 해결
+   ════════════════════════════════════════════ */
+
+/* 모달 안의 widget 텍스트 색 상속 강제 */
+#view-admin .widget,
+#view-admin .widget * {
+  color: inherit;
+}
+
+/* widget 자체 기본 텍스트 색 명시 */
+#view-admin .widget {
+  color: var(--text-main);
+}
+
+/* widget h3 는 muted 유지 (라벨 톤) */
+#view-admin .widget h3 {
+  color: var(--text-muted);
+}
+
+/* count 클래스는 메인 텍스트 색 */
+#view-admin .widget .count {
+  color: var(--text-main);
+}
+
+/* 일반 span/div 가 흰색으로 안 보이게 강제 */
+#view-admin .widget span:not([style*="color"]),
+#view-admin .widget div:not(.count):not([style*="color"]) {
+  color: var(--text-main);
+}
+
+/* 표 안의 텍스트도 */
+#view-admin table td,
+#view-admin table th {
+  color: var(--text-main);
+}
+#view-admin table th {
+  color: var(--text-muted);
+}
+
+/* 다크모드 — log-box 가독성 */
+body.dark-mode #view-admin .log-box {
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--text-main);
+}
+body.dark-mode #view-admin .log-box p {
+  color: var(--text-main);
+}
+body.dark-mode #view-admin .log-box .log-warn {
+  color: var(--warning);
+}
+body.dark-mode #view-admin .log-box .log-error {
+  color: var(--danger);
+}
+/* INJOY 포인트 카드 호버 효과 */
+.points-card {
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.points-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(245, 158, 11, 0.12);
+}
+/* ============================================================
+   📅 이달의 소식 관리 (Company Events)
+   ============================================================ */
+
+.ce-admin {}
+
+.ce-admin-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.ce-admin-head h3 {
+  font-size: 1.1rem;
+  margin: 0 0 4px;
+}
+.ce-admin-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+  line-height: 1.6;
+  max-width: 600px;
+}
+
+.ce-admin-filters {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.ce-filter-label {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-right: 4px;
+}
+.ce-filter-group {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.ce-chip {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.ce-chip:hover { color: var(--text-main); }
+.ce-chip.active {
+  background: var(--hover-bg);
+  color: var(--text-main);
+  font-weight: 700;
+  border-color: var(--text-main);
+}
+
+.ce-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+.ce-empty i {
+  font-size: 2.5rem;
+  opacity: 0.4;
+  margin-bottom: 12px;
+}
+
+/* 테이블 */
+.ce-admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.ce-admin-table th {
+  background: var(--hover-bg);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-align: left;
+  padding: 10px 14px;
+}
+.ce-admin-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+.ce-admin-table tr:last-child td { border-bottom: none; }
+.ce-row-past { opacity: 0.55; }
+
+.ce-row-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+}
+.ce-row-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.ce-row-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 3px;
+  line-height: 1.4;
+}
+.ce-row-date {
+  font-size: 0.85rem;
+  color: var(--text-main);
+  white-space: nowrap;
+}
+.ce-row-dday {
+  display: inline-block;
+  background: var(--hover-bg);
+  color: var(--primary-color);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  margin-left: 6px;
+}
+.ce-cat-pill {
+  font-size: 0.74rem;
+  padding: 3px 10px;
+  border-radius: 10px;
+  font-weight: 700;
+  display: inline-block;
+  white-space: nowrap;
+}
+.ce-today-badge {
+  background: var(--danger);
+  color: #fff;
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+.ce-ongoing-badge {
+  background: var(--primary-color);
+  color: #fff;
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+/* 편집 모달 */
+.ce-edit-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.ce-field { display: flex; flex-direction: column; gap: 6px; }
+.ce-field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+.ce-cat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.ce-cat-btn {
+  background: var(--input-bg);
+  border: 1.5px solid var(--border-color);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+  transition: 0.15s;
+}
+.ce-cat-btn:hover { color: var(--text-main); }
+.ce-cat-btn.selected { font-weight: 700; }
+
+.ce-preview {
+  margin-top: 10px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border-color);
+}
+.ce-preview-label {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+.ce-preview-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--hover-bg);
+  border-radius: 8px;
+}
+.ce-preview-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+.ce-preview-body { flex: 1; min-width: 0; }
+.ce-preview-body strong {
+  display: block;
+  font-size: 0.92rem;
+  color: var(--text-main);
+}
+.ce-preview-body p {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 2px 0 0;
+}
+.ce-preview-date {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  background: var(--panel-bg);
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+/* 모바일 */
+@media (max-width: 768px) {
+  .ce-cat-grid { grid-template-columns: repeat(2, 1fr); }
+  .ce-admin-table th:nth-child(4),
+  .ce-admin-table td:nth-child(4) { display: none; }
+}
