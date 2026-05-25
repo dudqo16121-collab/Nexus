@@ -1,0 +1,1119 @@
+/* =====================================================
+ * NEXUS Messenger Module v2 - messenger.css
+ * 사내 메신저 공통 스타일 (모든 시스템에서 재사용)
+ * - groupware, index, injoyhub 등 어디서나 동일하게 동작
+ * - 부모 페이지의 CSS 변수(--primary-color 등) 사용
+ *
+ * v2 추가: 그룹채팅, 파일첨부, 검색/북마크/핀, 이모지반응/답장,
+ *          온라인상태/타이핑 인디케이터
+ * ===================================================== */
+
+/* ---------- 모달 오버레이 ---------- */
+.nx-msg-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9990;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+.nx-msg-modal-overlay.open { display: flex; }
+
+.nx-msg-modal-box {
+    background: var(--panel-bg, #fff);
+    border-radius: 20px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.3);
+    width: 90vw;
+    max-width: 1100px;
+    height: 85vh;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: nxMsgModalIn 0.3s ease;
+}
+@keyframes nxMsgModalIn {
+    from { opacity: 0; transform: scale(0.96) translateY(20px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.nx-msg-modal-header {
+    padding: 20px 25px;
+    border-bottom: 1px solid var(--border-color, #f0f0f0);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+}
+.nx-msg-modal-header h2 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-main, #333);
+    margin: 0;
+}
+.nx-msg-modal-header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.nx-msg-modal-header-actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted, #a2a3b7);
+    font-size: 1.1rem;
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: 0.2s;
+}
+.nx-msg-modal-header-actions button:hover {
+    background: var(--hover-bg, #f4f7ff);
+    color: var(--primary-color, #4361ee);
+}
+.nx-msg-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.3rem;
+    cursor: pointer;
+    color: var(--text-muted, #a2a3b7);
+    padding: 5px;
+    border-radius: 8px;
+    transition: 0.2s;
+}
+.nx-msg-modal-close:hover {
+    background: var(--hover-bg, #f4f7ff);
+    color: var(--text-main, #333);
+}
+.nx-msg-modal-body {
+    padding: 0;
+    overflow: hidden;
+    flex: 1;
+    display: flex;
+}
+
+/* ---------- 채팅 레이아웃 ---------- */
+.nx-chat-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    width: 100%;
+    height: 100%;
+    gap: 0;
+}
+
+/* 사이드바 */
+.nx-chat-sidebar {
+    border-right: 1px solid var(--border-color, #f0f0f0);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.nx-chat-sidebar-header {
+    padding: 15px;
+    border-bottom: 1px solid var(--border-color, #f0f0f0);
+    flex-shrink: 0;
+}
+.nx-chat-sidebar-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.nx-chat-sidebar-header h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-main, #333);
+    margin: 0;
+}
+.nx-chat-new-group-btn {
+    background: var(--primary-color, #4361ee);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: 0.2s;
+}
+.nx-chat-new-group-btn:hover {
+    background: var(--secondary-color, #3f37c9);
+    transform: scale(1.03);
+}
+.nx-chat-search {
+    width: 100%;
+    border: 1px solid var(--border-color, #f0f0f0);
+    border-radius: 10px;
+    padding: 8px 12px;
+    background: var(--input-bg, #fdfdfd);
+    color: var(--text-main, #333);
+    outline: none;
+    font-size: 0.85rem;
+    font-family: inherit;
+}
+.nx-chat-search:focus { border-color: var(--primary-color, #4361ee); }
+
+/* 사이드바 탭 */
+.nx-chat-sidebar-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border-color, #f0f0f0);
+    flex-shrink: 0;
+}
+.nx-chat-tab {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--text-muted, #a2a3b7);
+    border-bottom: 2px solid transparent;
+    transition: 0.2s;
+    background: none;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    font-family: inherit;
+}
+.nx-chat-tab.active {
+    color: var(--primary-color, #4361ee);
+    border-bottom-color: var(--primary-color, #4361ee);
+    font-weight: 600;
+}
+.nx-chat-tab:hover { background: var(--hover-bg, #f4f7ff); }
+
+.nx-chat-user-list { overflow-y: auto; flex: 1; }
+
+.nx-chat-user-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 15px;
+    cursor: pointer;
+    transition: 0.2s;
+    border-bottom: 1px solid var(--border-color, #f0f0f0);
+    position: relative;
+}
+.nx-chat-user-item:hover { background: var(--hover-bg, #f4f7ff); }
+.nx-chat-user-item.active {
+    background: rgba(67, 97, 238, 0.08);
+    border-left: 3px solid var(--primary-color, #4361ee);
+}
+.nx-chat-user-avatar { position: relative; flex-shrink: 0; }
+.nx-chat-user-avatar .nx-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    background-color: #e0e0e0;
+}
+/* 그룹채팅 아이콘 (이미지 없을 때) */
+.nx-chat-user-avatar.group .nx-avatar {
+    background: linear-gradient(135deg, var(--primary-color, #4361ee), var(--secondary-color, #3f37c9));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1rem;
+}
+.nx-chat-user-avatar.group .nx-avatar::before {
+    content: '\f0c0'; /* fa-users */
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+}
+
+/* 온라인 상태 닷 */
+.nx-online-dot {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid var(--panel-bg, #fff);
+    background: #ccc;
+}
+.nx-online-dot.online  { background: #4ade80; }
+.nx-online-dot.away    { background: #facc15; }
+.nx-online-dot.offline { background: #cbd5e1; }
+
+.nx-chat-user-info { flex: 1; overflow: hidden; min-width: 0; }
+.nx-chat-user-info h5 {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-main, #333);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.nx-chat-user-info p {
+    font-size: 0.76rem;
+    color: var(--text-muted, #a2a3b7);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+}
+.nx-chat-unread-badge {
+    background: var(--primary-color, #4361ee);
+    color: white;
+    border-radius: 50%;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+/* 메인 채팅 영역 */
+.nx-chat-main {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+}
+.nx-chat-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid var(--border-color, #f0f0f0);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--panel-bg, #fff);
+    flex-shrink: 0;
+}
+.nx-chat-header .nx-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    background-color: #e0e0e0;
+}
+.nx-chat-header-info { min-width: 0; flex: 1; }
+.nx-chat-header-info h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-main, #333);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.nx-chat-header-info p {
+    font-size: 0.75rem;
+    color: var(--text-muted, #a2a3b7);
+    margin: 0;
+}
+.nx-chat-header-info .typing-indicator {
+    color: var(--primary-color, #4361ee);
+    font-style: italic;
+}
+.nx-chat-header-actions { margin-left: auto; display: flex; gap: 6px; }
+.nx-chat-header-actions button {
+    border: none;
+    background: var(--hover-bg, #f4f7ff);
+    border-radius: 8px;
+    padding: 7px 11px;
+    cursor: pointer;
+    color: var(--text-muted, #a2a3b7);
+    font-size: 0.82rem;
+    transition: 0.2s;
+}
+.nx-chat-header-actions button:hover {
+    background: var(--primary-color, #4361ee);
+    color: white;
+}
+
+/* 핀 고정 메시지 바 */
+.nx-pinned-bar {
+    background: rgba(67, 97, 238, 0.06);
+    border-bottom: 1px solid var(--border-color, #f0f0f0);
+    padding: 8px 16px;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-main, #333);
+    flex-shrink: 0;
+    cursor: pointer;
+}
+.nx-pinned-bar i { color: var(--primary-color, #4361ee); }
+.nx-pinned-bar-content {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.nx-pinned-bar-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted, #a2a3b7);
+    font-size: 0.9rem;
+}
+
+.nx-chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--bg-body, #f8f9fc);
+}
+.nx-chat-message {
+    display: flex;
+    gap: 10px;
+    max-width: 70%;
+    animation: nxMsgFadeIn 0.2s ease;
+    position: relative;
+}
+.nx-chat-message.mine {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+}
+.nx-chat-message .nx-msg-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    background-color: #e0e0e0;
+    flex-shrink: 0;
+}
+.nx-msg-body { display: flex; flex-direction: column; min-width: 0; }
+.nx-msg-sender {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--text-muted, #a2a3b7);
+    margin-bottom: 3px;
+    padding: 0 4px;
+}
+.nx-chat-message.mine .nx-msg-sender { display: none; }
+
+/* 답장 인용 박스 */
+.nx-msg-reply-quote {
+    background: rgba(0,0,0,0.05);
+    border-left: 3px solid var(--primary-color, #4361ee);
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    max-width: 100%;
+    overflow: hidden;
+}
+.nx-msg-reply-quote-sender {
+    font-weight: 600;
+    color: var(--primary-color, #4361ee);
+    font-size: 0.72rem;
+}
+.nx-msg-reply-quote-text {
+    color: var(--text-muted, #a2a3b7);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.nx-chat-message.mine .nx-msg-reply-quote { background: rgba(255,255,255,0.2); }
+.nx-chat-message.mine .nx-msg-reply-quote-sender { color: rgba(255,255,255,0.95); }
+.nx-chat-message.mine .nx-msg-reply-quote-text   { color: rgba(255,255,255,0.85); }
+
+.nx-msg-bubble {
+    padding: 10px 14px;
+    border-radius: 16px;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    max-width: 100%;
+    word-break: break-word;
+    position: relative;
+}
+.nx-chat-message:not(.mine) .nx-msg-bubble {
+    background: var(--panel-bg, #fff);
+    border: 1px solid var(--border-color, #f0f0f0);
+    border-radius: 4px 16px 16px 16px;
+    color: var(--text-main, #333);
+}
+.nx-chat-message.mine .nx-msg-bubble {
+    background: var(--primary-color, #4361ee);
+    color: white;
+    border-radius: 16px 4px 16px 16px;
+}
+.nx-msg-bubble.deleted {
+    font-style: italic;
+    opacity: 0.6;
+    background: transparent !important;
+    border: 1px dashed var(--border-color, #f0f0f0) !important;
+    color: var(--text-muted, #a2a3b7) !important;
+}
+
+/* 첨부파일 */
+.nx-msg-attachment-image {
+    max-width: 240px;
+    max-height: 240px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: block;
+    object-fit: cover;
+}
+.nx-msg-attachment-file {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: rgba(0,0,0,0.05);
+    border-radius: 10px;
+    text-decoration: none;
+    color: inherit;
+    max-width: 280px;
+}
+.nx-chat-message.mine .nx-msg-attachment-file { background: rgba(255,255,255,0.18); }
+.nx-msg-attachment-file i { font-size: 1.5rem; }
+.nx-msg-attachment-file-info { min-width: 0; flex: 1; }
+.nx-msg-attachment-file-info .name {
+    font-weight: 600;
+    font-size: 0.82rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.nx-msg-attachment-file-info .size {
+    font-size: 0.72rem;
+    opacity: 0.7;
+}
+
+.nx-msg-time {
+    font-size: 0.7rem;
+    color: var(--text-muted, #a2a3b7);
+    margin-top: 4px;
+    padding: 0 4px;
+    text-align: right;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+.nx-chat-message.mine .nx-msg-time { text-align: left; justify-content: flex-end; }
+.nx-msg-time .edited { font-style: italic; }
+
+/* 메시지 액션 버튼 (호버) */
+.nx-msg-actions {
+    position: absolute;
+    top: -12px;
+    display: none;
+    gap: 2px;
+    background: var(--panel-bg, #fff);
+    border: 1px solid var(--border-color, #f0f0f0);
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    padding: 3px;
+    z-index: 5;
+}
+.nx-chat-message:not(.mine) .nx-msg-actions { right: -10px; }
+.nx-chat-message.mine .nx-msg-actions       { left: -10px; }
+.nx-chat-message:hover .nx-msg-actions { display: flex; }
+.nx-msg-action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px 7px;
+    border-radius: 50%;
+    color: var(--text-muted, #a2a3b7);
+    font-size: 0.85rem;
+    transition: 0.15s;
+}
+.nx-msg-action-btn:hover {
+    background: var(--hover-bg, #f4f7ff);
+    color: var(--primary-color, #4361ee);
+}
+.nx-msg-action-btn.starred { color: #facc15; }
+
+/* 이모지 반응 */
+.nx-msg-reactions {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+    padding: 0 4px;
+    flex-wrap: wrap;
+}
+.nx-reaction-pill {
+    background: var(--panel-bg, #fff);
+    border: 1px solid var(--border-color, #e0e0e0);
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 0.78rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    transition: 0.15s;
+}
+.nx-reaction-pill:hover { transform: scale(1.05); }
+.nx-reaction-pill.mine {
+    background: rgba(67, 97, 238, 0.12);
+    border-color: var(--primary-color, #4361ee);
+}
+.nx-reaction-pill .count {
+    font-size: 0.72rem;
+    color: var(--text-muted, #a2a3b7);
+    font-weight: 600;
+}
+
+/* 이모지 picker */
+.nx-emoji-picker {
+    position: absolute;
+    background: var(--panel-bg, #fff);
+    border: 1px solid var(--border-color, #f0f0f0);
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    padding: 8px;
+    display: flex;
+    gap: 4px;
+    z-index: 10;
+    animation: nxMsgFadeIn 0.15s ease;
+}
+.nx-emoji-picker button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: 0.15s;
+}
+.nx-emoji-picker button:hover {
+    background: var(--hover-bg, #f4f7ff);
+    transform: scale(1.2);
+}
+
+/* 시스템 메시지 */
+.nx-msg-system {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-muted, #a2a3b7);
+    margin: 6px 0;
+    font-style: italic;
+    align-self: center;
+}
+
+.nx-chat-input-area {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border-color, #f0f0f0);
+    background: var(--panel-bg, #fff);
+    flex-shrink: 0;
+}
+
+/* 답장 인디케이터 (입력창 위) */
+.nx-chat-reply-indicator {
+    background: var(--hover-bg, #f4f7ff);
+    border-left: 3px solid var(--primary-color, #4361ee);
+    border-radius: 6px;
+    padding: 6px 10px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+}
+.nx-chat-reply-indicator .nx-reply-info {
+    flex: 1;
+    overflow: hidden;
+}
+.nx-chat-reply-indicator .nx-reply-info strong {
+    color: var(--primary-color, #4361ee);
+    margin-right: 6px;
+}
+.nx-chat-reply-indicator .nx-reply-info span {
+    color: var(--text-muted, #a2a3b7);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+    vertical-align: bottom;
+}
+.nx-chat-reply-cancel {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text-muted, #a2a3b7);
+}
+
+/* 첨부 미리보기 */
+.nx-chat-attach-preview {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+.nx-attach-preview-item {
+    position: relative;
+    padding: 6px 10px;
+    background: var(--hover-bg, #f4f7ff);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    max-width: 220px;
+}
+.nx-attach-preview-item img {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+.nx-attach-preview-item .name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 140px;
+}
+.nx-attach-preview-remove {
+    background: var(--danger, #f72585);
+    color: white;
+    border: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nx-chat-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+}
+.nx-chat-input-btn {
+    background: var(--hover-bg, #f4f7ff);
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    color: var(--text-muted, #a2a3b7);
+    font-size: 0.95rem;
+    transition: 0.2s;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.nx-chat-input-btn:hover {
+    background: var(--primary-color, #4361ee);
+    color: white;
+}
+.nx-chat-input {
+    flex: 1;
+    border: 1px solid var(--border-color, #f0f0f0);
+    border-radius: 20px;
+    padding: 10px 18px;
+    background: var(--input-bg, #fdfdfd);
+    color: var(--text-main, #333);
+    outline: none;
+    font-size: 0.9rem;
+    resize: none;
+    max-height: 100px;
+    font-family: inherit;
+    line-height: 1.4;
+}
+.nx-chat-input:focus { border-color: var(--primary-color, #4361ee); }
+
+.nx-chat-send-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: var(--primary-color, #4361ee);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: 0.2s;
+    flex-shrink: 0;
+}
+.nx-chat-send-btn:hover {
+    background: var(--secondary-color, #3f37c9);
+    transform: scale(1.05);
+}
+.nx-chat-send-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.nx-chat-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    color: var(--text-muted, #a2a3b7);
+    gap: 10px;
+    text-align: center;
+}
+.nx-chat-empty i { font-size: 2.5rem; opacity: 0.3; }
+
+.nx-chat-date-divider {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-muted, #a2a3b7);
+    margin: 14px 0 6px;
+    position: relative;
+    align-self: stretch;
+}
+.nx-chat-date-divider::before,
+.nx-chat-date-divider::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 30%;
+    height: 1px;
+    background: var(--border-color, #f0f0f0);
+}
+.nx-chat-date-divider::before { left: 0; }
+.nx-chat-date-divider::after { right: 0; }
+
+@keyframes nxMsgFadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- 플로팅 메신저 버튼 ---------- */
+.nx-floating-chat-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background: var(--primary-color, #4361ee);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(67, 97, 238, 0.4);
+    z-index: 9997;
+    transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+}
+.nx-floating-chat-btn:hover {
+    transform: translateY(-5px) scale(1.05);
+    background: var(--secondary-color, #3f37c9);
+    box-shadow: 0 15px 35px rgba(67, 97, 238, 0.5);
+}
+.nx-floating-msg-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    background: var(--danger, #f72585);
+    color: white;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 11px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--bg-body, #f8f9fc);
+}
+
+/* ---------- 헤더 메신저 버튼 ---------- */
+.nx-msg-header-btn { position: relative; cursor: pointer; }
+.nx-msg-header-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 16px;
+    height: 16px;
+    background: var(--danger, #f72585);
+    border-radius: 50%;
+    font-size: 0.6rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+/* ---------- 알림 팝업 ---------- */
+.nx-msg-notification {
+    position: fixed;
+    bottom: 110px;
+    right: 30px;
+    z-index: 9998;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+}
+.nx-msg-notif-card {
+    background: var(--panel-bg, #fff);
+    border: 1px solid var(--border-color, #f0f0f0);
+    border-radius: 16px;
+    padding: 14px 18px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: 320px;
+    pointer-events: all;
+    cursor: pointer;
+    animation: nxMsgSlideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border-left: 4px solid var(--primary-color, #4361ee);
+}
+@keyframes nxMsgSlideIn {
+    from { opacity: 0; transform: translateX(100px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+.nx-msg-notif-card.hiding { animation: nxMsgSlideOut 0.3s ease forwards; }
+@keyframes nxMsgSlideOut {
+    to { opacity: 0; transform: translateX(120px); }
+}
+.nx-msg-notif-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    background-color: #e0e0e0;
+    flex-shrink: 0;
+}
+.nx-msg-notif-content { flex: 1; overflow: hidden; }
+.nx-msg-notif-content h5 {
+    font-size: 0.88rem;
+    font-weight: 700;
+    margin-bottom: 2px;
+    color: var(--text-main, #333);
+}
+.nx-msg-notif-content p {
+    font-size: 0.8rem;
+    color: var(--text-muted, #a2a3b7);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0;
+}
+.nx-msg-notif-close {
+    color: var(--text-muted, #a2a3b7);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 2px;
+}
+.nx-msg-notif-close:hover { color: var(--danger, #f72585); }
+
+/* ---------- 보조 모달 (그룹 생성, 검색결과, 멤버목록, 이미지뷰어) ---------- */
+.nx-sub-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 9995;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+}
+.nx-sub-modal-overlay.open { display: flex; }
+.nx-sub-modal-box {
+    background: var(--panel-bg, #fff);
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    width: 90vw;
+    max-width: 500px;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.nx-sub-modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color, #f0f0f0);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.nx-sub-modal-header h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-main, #333);
+    margin: 0;
+}
+.nx-sub-modal-body {
+    padding: 16px 20px;
+    overflow-y: auto;
+    flex: 1;
+}
+.nx-sub-modal-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border-color, #f0f0f0);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+.nx-btn-primary, .nx-btn-secondary {
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: 0.2s;
+    font-family: inherit;
+}
+.nx-btn-primary {
+    background: var(--primary-color, #4361ee);
+    color: white;
+}
+.nx-btn-primary:hover { background: var(--secondary-color, #3f37c9); }
+.nx-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.nx-btn-secondary {
+    background: var(--hover-bg, #f4f7ff);
+    color: var(--text-main, #333);
+}
+.nx-btn-secondary:hover { background: var(--border-color, #f0f0f0); }
+
+/* 멤버 체크리스트 (그룹 생성) */
+.nx-member-checklist { display: flex; flex-direction: column; gap: 2px; }
+.nx-member-check-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.15s;
+}
+.nx-member-check-item:hover { background: var(--hover-bg, #f4f7ff); }
+.nx-member-check-item input { margin: 0; cursor: pointer; }
+.nx-member-check-item .nx-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    background-color: #e0e0e0;
+}
+.nx-member-check-item .info { flex: 1; min-width: 0; }
+.nx-member-check-item .info h5 {
+    font-size: 0.85rem;
+    margin: 0;
+    color: var(--text-main, #333);
+}
+.nx-member-check-item .info p {
+    font-size: 0.72rem;
+    color: var(--text-muted, #a2a3b7);
+    margin: 0;
+}
+
+/* 검색결과/북마크 결과 리스트 */
+.nx-search-result-item {
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.15s;
+    border: 1px solid transparent;
+    margin-bottom: 6px;
+}
+.nx-search-result-item:hover {
+    background: var(--hover-bg, #f4f7ff);
+    border-color: var(--border-color, #f0f0f0);
+}
+.nx-search-result-item .meta {
+    font-size: 0.72rem;
+    color: var(--text-muted, #a2a3b7);
+    margin-bottom: 3px;
+    display: flex;
+    justify-content: space-between;
+}
+.nx-search-result-item .content {
+    font-size: 0.85rem;
+    color: var(--text-main, #333);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.nx-search-result-item .highlight {
+    background: rgba(250, 204, 21, 0.4);
+    font-weight: 600;
+}
+
+/* 이미지 라이트박스 */
+.nx-image-lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 10000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+}
+.nx-image-lightbox.open { display: flex; }
+.nx-image-lightbox img {
+    max-width: 95vw;
+    max-height: 95vh;
+    border-radius: 8px;
+}
+
+/* 메시지 입력창 disabled (업로드 중) */
+.nx-chat-input.uploading { opacity: 0.6; pointer-events: none; }
+.nx-upload-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--border-color, #f0f0f0);
+    border-top-color: var(--primary-color, #4361ee);
+    border-radius: 50%;
+    animation: nxSpin 0.8s linear infinite;
+}
+@keyframes nxSpin {
+    to { transform: rotate(360deg); }
+}
+
+/* ---------- 반응형 ---------- */
+@media (max-width: 768px) {
+    .nx-msg-modal-box {
+        width: 100vw;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+    .nx-chat-layout { grid-template-columns: 1fr; }
+    .nx-chat-sidebar.hide-on-mobile { display: none; }
+    .nx-floating-chat-btn {
+        bottom: 20px;
+        right: 20px;
+        width: 54px;
+        height: 54px;
+        font-size: 1.5rem;
+    }
+    .nx-msg-notification {
+        bottom: 90px;
+        right: 15px;
+        left: 15px;
+    }
+    .nx-msg-notif-card { max-width: 100%; }
+    .nx-chat-message { max-width: 85%; }
+}
