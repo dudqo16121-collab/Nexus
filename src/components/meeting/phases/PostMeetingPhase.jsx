@@ -8,6 +8,7 @@ import { useToast } from '../../../contexts/ToastContext';
 import PostSummarySection from '../parts/PostSummarySection';
 import PostDecisionsSummary from '../parts/PostDecisionsSummary';
 import SendRecapModal from '../parts/SendRecapModal';
+import ContextWidget from '../../common/ContextWidget';
 
 function fmtDuration(startIso, endIso) {
   if (!startIso || !endIso) return null;
@@ -114,7 +115,12 @@ export default function PostMeetingPhase() {
           <PostDecisionsSummary />
         </div>
       </div>
-
+      {/* 🔗 연결된 자료 — 이 회의에서 만들어진 카드 / 첨부된 결재·위키·프로젝트 */}
+      <ContextWidget
+        kind="meeting"
+        id={canvas.id}
+        exclude={['meetings', 'decisions']}
+      />
       {/* 하단 액션 */}
       <div className="mc-post-bottom-actions">
         {isHost && attendees.length > 1 && (

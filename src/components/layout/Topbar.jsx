@@ -1,15 +1,23 @@
 // components/layout/Topbar.jsx
-// 전역 헤더 — 좌측 브랜드 / 우측 알림 + 다크모드.
+// 전역 헤더 — 좌측 브랜드 / 우측 활동피드 + 알림 + 다크모드.
 
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNotification, NOTIF_TYPES } from '../../contexts/NotificationContext';
 import { useOrgChart } from '../../contexts/OrgChartContext';
+import { useActivityFeed } from '../../contexts/ActivityFeedContext';
+import ActivityFeedPanel from './ActivityFeedPanel';
+import BookmarksPanel from './BookmarksPanel';
+import QuickMemoPanel from './QuickMemoPanel';
+import { useBookmark } from '../../contexts/BookmarkContext';
 
 export default function Topbar() {
   const [isDark, setIsDark] = useState(
     () => typeof localStorage !== 'undefined' && localStorage.getItem('theme') === 'dark'
   );
+  const [activityOpen, setActivityOpen] = useState(false);
+  const [bookmarksOpen, setBookmarksOpen] = useState(false);
+  const [memoOpen, setMemoOpen] = useState(false);
 
   useEffect(() => {
     if (isDark) {
@@ -22,30 +30,123 @@ export default function Topbar() {
   }, [isDark]);
 
   return (
-    <header className="nexus-topbar">
-      <h2 className="nexus-topbar-title">
-        <i className="fa-solid fa-cube" style={{ color: 'var(--primary-color)', marginRight: 8 }} />
-        NEXUS 그룹웨어
-      </h2>
+    <>
+      <header className="nexus-topbar">
+        <h2 className="nexus-topbar-title">
+          <i className="fa-solid fa-cube" style={{ color: 'var(--primary-color)', marginRight: 8 }} />
+          NEXUS 그룹웨어
+        </h2>
 
-      <div className="nexus-topbar-actions">
-        <NotificationBell />
+        <div className="nexus-topbar-actions">
+          <QuickMemoButton onClick={() => setMemoOpen(true)} />
+          <BookmarksButton onClick={() => setBookmarksOpen(true)} />
+          <ActivityFeedButton onClick={() => setActivityOpen(true)} />
+          <NotificationBell />
 
-        <button
-          type="button"
-          className="nexus-topbar-icon"
-          onClick={() => setIsDark((v) => !v)}
-          title={isDark ? '라이트 모드로 전환' : '다크 모드로 전환'}
-          aria-label="다크모드 토글"
-        >
-          <i className={`fa-solid ${isDark ? 'fa-sun' : 'fa-moon'}`} />
-        </button>
-      </div>
-    </header>
+          <button
+            type="button"
+            className="nexus-topbar-icon"
+            onClick={() => setIsDark((v) => !v)}
+            title={isDark ? '라이트 모드로 전환' : '다크 모드로 전환'}
+            aria-label="다크모드 토글"
+          >
+            <i className={`fa-solid ${isDark ? 'fa-sun' : 'fa-moon'}`} />
+          </button>
+        </div>
+      </header>
+
+      <ActivityFeedPanel
+        isOpen={activityOpen}
+        onClose={() => setActivityOpen(false)}
+      />
+      <BookmarksPanel
+        isOpen={bookmarksOpen}
+        onClose={() => setBookmarksOpen(false)}
+      />
+      <QuickMemoPanel
+        isOpen={memoOpen}
+        onClose={() => setMemoOpen(false)}
+      />
+    </>
   );
 }
 
-/* 🔔 알림 종 + 드롭다운 */
+/* ⭐ 즐겨찾기 버튼 — 카운트 배지 */
+function BookmarksButton({ onClick }) {
+  const { bookmarks } = useBookmark();
+  const count = bookmarks?.length || 0;
+  return (
+    <button
+      type="button"
+      className="nexus-topbar-icon"
+      onClick={onClick}
+      title="즐겨찾기"
+      aria-label="즐겨찾기 보기"
+    >
+      <i className="fa-solid fa-star" />
+      {count > 0 && (
+        <span className="topbar-count-badge">{count > 99 ? '99+' : count}</span>
+      )}
+    </button>
+  );
+}
+
+/* 📝 빠른 메모 버튼 */
+function QuickMemoButton({ onClick }) {
+  return (
+    <button
+      type="button"
+      className="nexus-topbar-icon"
+      onClick={onClick}
+      title="빠른 메모"
+      aria-label="빠른 메모 보기"
+    >
+      <i className="fa-solid fa-note-sticky" />
+    </button>
+  );
+}
+
+/* 🕓 활동 피드 버튼 — 새 활동 있으면 빨간 점 */
+function ActivityFeedButton({ onClick }) {
+  const { allItems } = useActivityFeed();
+
+  /* '새 활동' 판단 — localStorage 에 마지막 본 시각 저장.
+     클릭 시 갱신해서 점이 사라지게. */
+  const [hasNew, setHasNew] = useState(false);
+
+  useEffect(() => {
+    if (!allItems || allItems.length === 0) {
+      setHasNew(false);
+      return;
+    }
+    const lastSeenIso = localStorage.getItem('nexus_activity_last_seen');
+    const lastSeen = lastSeenIso ? new Date(lastSeenIso).getTime() : 0;
+    const newest = new Date(allItems[0]?.time || 0).getTime();
+    setHasNew(newest > lastSeen);
+  }, [allItems]);
+
+  const handleClick = () => {
+    /* 클릭한 시점을 마지막 본 시각으로 저장 */
+    localStorage.setItem('nexus_activity_last_seen', new Date().toISOString());
+    setHasNew(false);
+    onClick();
+  };
+
+  return (
+    <button
+      type="button"
+      className="nexus-topbar-icon afp-trigger"
+      onClick={handleClick}
+      title="최근 활동"
+      aria-label="최근 활동 보기"
+    >
+      <i className="fa-solid fa-timeline" />
+      {hasNew && <span className="afp-dot" aria-hidden="true" />}
+    </button>
+  );
+}
+
+/* 🔔 알림 종 + 드롭다운 — 기존 그대로 */
 function NotificationBell() {
   const {
     items, unreadCount, dropdownOpen, setDropdownOpen,
@@ -55,7 +156,6 @@ function NotificationBell() {
   const navigate = useNavigate();
   const wrapRef = useRef(null);
 
-  /* 바깥 클릭 시 닫기 */
   useEffect(() => {
     if (!dropdownOpen) return;
     const onClick = (e) => {
@@ -78,7 +178,6 @@ function NotificationBell() {
   const findUser = (id) => members.find((u) => u.id === id);
 
   return (
-    
     <div className="notif-wrap" ref={wrapRef}>
       <button
         type="button"
@@ -149,7 +248,6 @@ function NotificationBell() {
                       <i className="fa-solid fa-xmark" />
                     </button>
                   </div>
-                  
                 );
               })
             )}

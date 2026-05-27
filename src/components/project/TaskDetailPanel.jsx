@@ -17,6 +17,7 @@ import {
   escapeHtml,
   mentionsToHtml,
 } from '../../utils/projectHelpers';
+import ContextWidget from '../common/ContextWidget'
 
 export default function TaskDetailPanel() {
   const toast = useToast();
@@ -221,7 +222,15 @@ export default function TaskDetailPanel() {
                 onChange={(e) => patch('description', e.target.value)}
               />
             </div>
-
+            {/* 🔗 연결된 자료 — 회의/결정/결재/위키/프로젝트 횡단 */}
+            <div className="pm-tp-section">
+              <ContextWidget
+                kind="task"
+                id={selectedTaskId}
+                exclude={['tasks']}
+                compact
+              />
+            </div>
             {/* 댓글 */}
             <div className="pm-tp-section">
               <h4>

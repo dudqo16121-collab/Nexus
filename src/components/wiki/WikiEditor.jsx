@@ -11,6 +11,7 @@ import WikiLinkAutocomplete from './WikiLinkAutocomplete';
 import { makeWikiLinkHtml, detectWikiLinkTrigger, convertBracketsToLinks } from '../../utils/wikiLinks';
 import WikiRevisionPanel from './WikiRevisionPanel';
 import WikiBacklinks from './WikiBacklinks';
+import ContextWidget from '../common/ContextWidget';
 
 export default function WikiEditor() {
   const { currentDoc, saving, updateDocument, canEdit, documents, selectDocument, createDocument } = useWiki();
@@ -406,6 +407,12 @@ export default function WikiEditor() {
             />
           )}
         </div>
+              {/* 🔗 연결된 자료 — 첨부된 회의 등 */}
+      <ContextWidget
+        kind="wiki"
+        id={currentDoc.id}
+        exclude={['wikis']}
+      />
               {/* ⭐ 백링크 섹션 — 본문 아래 */}
       <WikiBacklinks
         documentId={currentDoc.id}
