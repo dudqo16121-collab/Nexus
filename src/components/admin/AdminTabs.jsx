@@ -6,6 +6,7 @@ const TABS = [
   { id: 'attendance', label: '근태/업무 통계' },
   { id: 'notices',    label: '공지/팝업 관리' },
   { id: 'events',     label: '이달의 소식' },
+  { id: 'polls',      label: '사내 투표' },
   { id: 'rooms', label: '회의실 관리' },
   { id: 'monitoring', label: '시스템 모니터링' },
 ];
