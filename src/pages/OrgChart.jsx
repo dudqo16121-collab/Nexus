@@ -1,19 +1,25 @@
-// pages/OrgChart.jsx
-// 조직도 페이지 — 헤더 + 부서 사이드바 + 직원 그리드 + 상세 모달.
+// 조직도 페이지 — 코맨드 센터.
 
+import { useOrgChart } from '../contexts/OrgChartContext';
 import OrgChartHeader from '../components/orgchart/OrgChartHeader';
 import OrgChartSidebar from '../components/orgchart/OrgChartSidebar';
 import OrgChartGrid from '../components/orgchart/OrgChartGrid';
+import OrgChartList from '../components/orgchart/OrgChartList';
+import OrgChartTree from '../components/orgchart/OrgChartTree';
 import OrgChartDetailModal from '../components/orgchart/OrgChartDetailModal';
 
 export default function OrgChart() {
+  const { viewMode } = useOrgChart();
+
   return (
     <section id="view-orgchart">
       <OrgChartHeader />
       <div className="org-layout">
         <OrgChartSidebar />
         <main className="org-main">
-          <OrgChartGrid />
+          {viewMode === 'list' && <OrgChartList />}
+          {viewMode === 'tree' && <OrgChartTree />}
+          {(!viewMode || viewMode === 'grid') && <OrgChartGrid />}
         </main>
       </div>
       <OrgChartDetailModal />

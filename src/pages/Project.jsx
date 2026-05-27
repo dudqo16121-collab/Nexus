@@ -16,6 +16,8 @@ import KanbanBoard from '../components/project/KanbanBoard';
 import TaskDetailPanel from '../components/project/TaskDetailPanel';
 import ProjectCompleteModal from '../components/project/ProjectCompleteModal';
 import ProjectReportModal from '../components/project/ProjectReportModal';
+import ContextWidget from '../components/common/ContextWidget';
+import ProjectSituationRoom from '../components/project/situation/ProjectSituationRoom';
 
 export default function Project() {
   const {
@@ -133,6 +135,18 @@ export default function Project() {
 
         <main className="pm-main">
           <ProjectHeader />
+
+          {selectedProject && <ProjectSituationRoom />}
+          
+                    {/* 🔗 연결된 자료 — 회의에서 만들어진 카드 / 회의 첨부 이력 */}
+          {selectedProject && (
+            <ContextWidget
+              kind="project"
+              id={selectedProject.id}
+              exclude={['projects']}
+              compact
+            />
+          )}
           {selectedProject && <KanbanBoard />}
         </main>
       </div>

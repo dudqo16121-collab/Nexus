@@ -16,16 +16,18 @@ export function MailProvider({ children }) {
   const { createBulkNotifications } = useNotification();
 
   /* 폴더 + 검색 + 선택 */
-  const [folder, setFolder] = useState('inbox'); // inbox | sent | starred | trash
+  const [folder, setFolder] = useState('inbox');
   const [search, setSearch] = useState('');
   const [selectedId, setSelectedId] = useState(null);
+  const [categoryFilter, setCategoryFilter] = useState(null);
+  const [listFilter, setListFilter] = useState('all'); // 'all' | 'unread' | 'starred' | 'attached'
+  const [selectedIds, setSelectedIds] = useState(() => new Set()); // 체크박스 선택
 
   /* 데이터 */
-  const [inbox, setInbox] = useState([]);     // {message, recipient}
-  const [sent, setSent] = useState([]);       // {message}
+  const [inbox, setInbox] = useState([]);
+  const [sent, setSent] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [allUsers, setAllUsers] = useState([]); // 수신자 선택용
-
+  const [allUsers, setAllUsers] = useState([]);
   /* 작성 모달 */
   const [composeModal, setComposeModal] = useState({
     open: false,
@@ -135,27 +137,122 @@ export function MailProvider({ children }) {
     }
 
     /* 검색 */
-    const kw = search.trim().toLowerCase();
-    if (kw) {
-      list = list.filter((m) =>
-        (m.message?.subject || '').toLowerCase().includes(kw) ||
-        (m.message?.body || '').toLowerCase().includes(kw)
-      );
-    }
-    return list;
-  }, [folder, inbox, sent, search]);
+/* 카테고리 필터 */
+if (categoryFilter) {
+  list = list.filter((m) => (m.message?.category || 'general') === categoryFilter);
+}
+/* 목록 필터 탭 */
+if (listFilter === 'unread') {
+  list = list.filter((m) => m.kind === 'inbox' && !m.read_at);
+} else if (listFilter === 'starred') {
+  list = list.filter((m) => m.starred);
+} else if (listFilter === 'attached') {
+  /* 첨부 표시 — 일단 본문에 "첨부:" 또는 mail_attachments 가 있을 때.
+     첨부 테이블이 없으면 본문 키워드로 폴백. */
+  list = list.filter((m) => {
+    const body = m.message?.body || '';
+    return /첨부|attach/i.test(body);
+  });
+}
+
+/* 검색 */
+const kw = search.trim().toLowerCase();
+if (kw) {
+  list = list.filter((m) =>
+    (m.message?.subject || '').toLowerCase().includes(kw) ||
+    (m.message?.body || '').toLowerCase().includes(kw)
+  );
+}
+return list;
+  }, [folder, inbox, sent, search, categoryFilter, listFilter]);
 
   /* 폴더별 카운트 */
-  const counts = useMemo(() => {
-    const inboxItems = inbox.filter((r) => r.folder === 'inbox');
-    return {
-      inbox:   inboxItems.length,
-      unread:  inboxItems.filter((r) => !r.read_at).length,
-      starred: inbox.filter((r) => r.starred && r.folder !== 'trash').length,
-      sent:    sent.length,
-      trash:   inbox.filter((r) => r.folder === 'trash').length,
-    };
-  }, [inbox, sent]);
+/* 폴더별 카운트 + 카테고리별 카운트 + 이번주 통계 */
+const counts = useMemo(() => {
+  const inboxItems = inbox.filter((r) => r.folder === 'inbox');
+
+  /* 카테고리별 카운트 — inbox + sent 합산 (휴지통 제외) */
+  const allActive = [
+    ...inbox.filter((r) => r.folder !== 'trash').map((r) => r.message),
+    ...sent,
+  ].filter(Boolean);
+
+  const byCategory = {
+    general: 0,
+    notice:  0,
+    mention: 0,
+    system:  0,
+  };
+  allActive.forEach((m) => {
+    const c = m.category || 'general';
+    if (byCategory[c] !== undefined) byCategory[c] += 1;
+    else byCategory.general += 1;
+  });
+
+  /* 이번주 통계 — 이번 주 월요일 00:00 기준 */
+  const now = new Date();
+  const weekStart = new Date(now);
+  weekStart.setHours(0, 0, 0, 0);
+  const day = weekStart.getDay() || 7; // 일=0 → 7
+  weekStart.setDate(weekStart.getDate() - (day - 1));
+
+  const isThisWeek = (iso) => iso && new Date(iso) >= weekStart;
+
+  const weekReceived = inboxItems.filter((r) => isThisWeek(r.created_at)).length;
+  const weekUnread = inboxItems.filter((r) => !r.read_at).length;
+  /* 답장 대기 — 받은 메일 중 안 읽음 + 7일 이내 */
+  const weekToReply = inboxItems.filter((r) => {
+    if (!r.read_at) return false; // 안 읽은 건 위에 있음
+    /* 7일 이내 받은 메일이고 답장 안 보낸 경우 — 간이 추정 */
+    return isThisWeek(r.created_at);
+  }).length;
+
+  return {
+    inbox:   inboxItems.length,
+    unread:  weekUnread,
+    starred: inbox.filter((r) => r.starred && r.folder !== 'trash').length,
+    sent:    sent.length,
+    trash:   inbox.filter((r) => r.folder === 'trash').length,
+    /* 새로 추가 */
+    byCategory,
+    weekStats: {
+      received: weekReceived,
+      toReply:  weekToReply,
+      unread:   weekUnread,
+    },
+  };
+}, [inbox, sent]);
+
+/* 필터 탭별 카운트 — 현재 폴더 + 카테고리 기준 */
+const listCounts = useMemo(() => {
+  /* 폴더 + 카테고리만 적용된 베이스 리스트 (필터 탭 적용 전) */
+  let base = [];
+  if (folder === 'sent') {
+    base = sent.map((m) => ({ kind: 'sent', message: m, starred: false, read_at: 'sent' }));
+  } else {
+    const matchFolder =
+      folder === 'inbox'  ? (r) => r.folder === 'inbox'
+      : folder === 'starred' ? (r) => r.starred && r.folder !== 'trash'
+      : folder === 'trash'  ? (r) => r.folder === 'trash'
+      : () => true;
+    base = inbox.filter(matchFolder).map((r) => ({
+      kind: 'inbox',
+      message: r.message,
+      starred: r.starred,
+      read_at: r.read_at,
+    }));
+  }
+  if (categoryFilter) {
+    base = base.filter((m) => (m.message?.category || 'general') === categoryFilter);
+  }
+
+  return {
+    all:      base.length,
+    unread:   base.filter((m) => m.kind === 'inbox' && !m.read_at).length,
+    starred:  base.filter((m) => m.starred).length,
+    attached: base.filter((m) => /첨부|attach/i.test(m.message?.body || '')).length,
+  };
+}, [folder, inbox, sent, categoryFilter]);
 
   /* 선택된 메일 */
   const selectedMail = useMemo(
@@ -183,6 +280,44 @@ export function MailProvider({ children }) {
       }
     }
   }, [visibleMails]);
+  
+/* 스레드 조회 — 같은 parent_id 또는 자신이 부모인 메일들 */
+const fetchThread = useCallback(async (mail) => {
+  if (!user || !mail?.message?.id) return [];
+  const messageId = mail.message.id;
+  const parentId = mail.message.parent_id;
+  const rootId = parentId || messageId; // 스레드의 루트 메시지 ID
+
+  try {
+    /* root 메일 + 모든 답장들 (parent_id = rootId 인 것들 + rootId 자체) */
+    const { data, error } = await supabase
+      .from('mail_messages')
+      .select('id, subject, body, sender_id, parent_id, category, created_at')
+      .or(`id.eq.${rootId},parent_id.eq.${rootId}`)
+      .order('created_at', { ascending: true });
+    if (error) throw error;
+    /* 현재 보고 있는 메일은 제외 */
+    return (data || []).filter((m) => m.id !== messageId);
+  } catch (e) {
+    console.warn('[Mail] fetchThread:', e);
+    return [];
+  }
+}, [user]);
+
+/* 인라인 답장 — 모달 없이 바로 전송 */
+const quickReply = useCallback(async (originalMail, replyBody) => {
+  if (!originalMail?.message) return { ok: false, error: '원본 메일 없음' };
+  if (!replyBody?.trim()) return { ok: false, error: '내용을 입력해주세요' };
+
+  const original = originalMail.message;
+  return await sendMail({
+    subject: original.subject?.startsWith('Re: ') ? original.subject : `Re: ${original.subject || ''}`,
+    body: replyBody,
+    recipientIds: [original.sender_id],
+    parentId: original.id,
+    category: original.category || 'general',
+  });
+}, []); // sendMail은 hoisting 되니까 deps 비워둠 (또는 [sendMail] — 둘 다 동작)
 
   /* 별표 토글 */
   const toggleStar = useCallback(async (recipientId) => {
@@ -205,6 +340,85 @@ export function MailProvider({ children }) {
       );
     }
   }, [inbox]);
+
+  /* ─── 일괄 선택 ─────────────────────────────── */
+const toggleSelect = useCallback((id) => {
+  setSelectedIds((prev) => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    return next;
+  });
+}, []);
+
+const selectAll = useCallback(() => {
+  setSelectedIds(new Set(visibleMails.map((m) => m.id)));
+}, [visibleMails]);
+
+const clearSelection = useCallback(() => {
+  setSelectedIds(new Set());
+}, []);
+
+/* 일괄 읽음 처리 */
+const markSelectedAsRead = useCallback(async () => {
+  const ids = [...selectedIds];
+  if (ids.length === 0) return;
+  const now = new Date().toISOString();
+  const targets = inbox.filter((r) => ids.includes(r.id) && !r.read_at);
+  if (targets.length === 0) {
+    clearSelection();
+    return;
+  }
+  setInbox((prev) =>
+    prev.map((r) => (ids.includes(r.id) ? { ...r, read_at: r.read_at || now } : r))
+  );
+  try {
+    await supabase
+      .from('mail_recipients')
+      .update({ read_at: now })
+      .in('id', targets.map((r) => r.id));
+  } catch (e) {
+    console.warn('[Mail] bulk read failed', e);
+  }
+  clearSelection();
+}, [selectedIds, inbox, clearSelection]);
+
+/* 일괄 별표 */
+const starSelected = useCallback(async () => {
+  const ids = [...selectedIds];
+  if (ids.length === 0) return;
+  setInbox((prev) =>
+    prev.map((r) => (ids.includes(r.id) ? { ...r, starred: true } : r))
+  );
+  try {
+    await supabase
+      .from('mail_recipients')
+      .update({ starred: true })
+      .in('id', ids);
+  } catch (e) {
+    console.warn('[Mail] bulk star failed', e);
+  }
+  clearSelection();
+}, [selectedIds, clearSelection]);
+
+/* 일괄 휴지통 */
+const trashSelected = useCallback(async () => {
+  const ids = [...selectedIds];
+  if (ids.length === 0) return;
+  if (!window.confirm(`${ids.length}개의 메일을 휴지통으로 옮길까요?`)) return;
+  setInbox((prev) =>
+    prev.map((r) => (ids.includes(r.id) ? { ...r, folder: 'trash' } : r))
+  );
+  try {
+    await supabase
+      .from('mail_recipients')
+      .update({ folder: 'trash' })
+      .in('id', ids);
+  } catch (e) {
+    console.warn('[Mail] bulk trash failed', e);
+  }
+  clearSelection();
+}, [selectedIds, clearSelection]);
 
   /* 휴지통으로 이동 */
   const moveToTrash = useCallback(async (recipientId) => {
@@ -307,29 +521,35 @@ export function MailProvider({ children }) {
     setComposeModal({ open: false, mode: 'new', initial: null });
   }, []);
 
-  return (
-    <MailContext.Provider value={{
-      /* 상태 */
-      folder, setFolder,
-      search, setSearch,
-      selectedId, setSelectedId,
-      selectMail,
-      /* 데이터 */
-      inbox, sent, allUsers,
-      visibleMails, selectedMail, counts,
-      loading,
-      /* 액션 */
-      toggleStar,
-      moveToTrash,
-      restoreFromTrash,
-      permanentDelete,
-      sendMail,
-      fetchInbox, fetchSent,
-      /* 작성 모달 */
-      composeModal,
-      openCompose,
-      closeCompose,
-    }}>
+return (
+  <MailContext.Provider value={{
+    /* 상태 */
+    folder, setFolder,
+    search, setSearch,
+    selectedId, setSelectedId,
+    selectMail,
+    categoryFilter, setCategoryFilter,
+    listFilter, setListFilter,
+    selectedIds,
+    /* 데이터 */
+    inbox, sent, allUsers,
+    visibleMails, selectedMail, counts, listCounts,
+    loading,
+    /* 액션 */
+    fetchThread, quickReply,
+    toggleStar,
+    toggleSelect, selectAll, clearSelection,
+    markSelectedAsRead, starSelected, trashSelected,
+    moveToTrash,
+    restoreFromTrash,
+    permanentDelete,
+    sendMail,
+    fetchInbox, fetchSent,
+    /* 작성 모달 */
+    composeModal,
+    openCompose,
+    closeCompose,
+  }}>
       {children}
     </MailContext.Provider>
   );

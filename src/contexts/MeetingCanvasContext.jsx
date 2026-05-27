@@ -15,12 +15,14 @@ import { useNotification } from './NotificationContext';
 import {
   DEFAULT_DURATION_MIN, MIN_TITLE_LENGTH, MAX_TITLE_LENGTH,
 } from '../config/meetingCanvasConfig';
+import { useContextLinks } from './ContextLinksContext';
 
 const MeetingCanvasContext = createContext(null);
 
 export function MeetingCanvasProvider({ children }) {
   const { user, profile } = useAuth();
-  const { createBulkNotifications } = useNotification();
+  const { createBulkNotifications, createNotification } = useNotification();
+  const { invalidate: invalidateContextLinks } = useContextLinks();
 
   /* 내가 관련된 회의 목록 (host 또는 참석자) — 가벼운 정보만 */
   const [myMeetings, setMyMeetings] = useState([]);
@@ -461,11 +463,18 @@ export function MeetingCanvasProvider({ children }) {
         }]);
       if (err) throw err;
       await refreshCurrent();
+      // 🔗 ContextLinks 캐시 무효화 — 회의 + 첨부된 자산 종류별
+      invalidateContextLinks('meeting', canvasId);
+      if (attachment?.ref_id) {
+        if (attachment.kind === 'approval') invalidateContextLinks('approval', attachment.ref_id);
+        if (attachment.kind === 'wiki_link') invalidateContextLinks('wiki', attachment.ref_id);
+        if (attachment.kind === 'project') invalidateContextLinks('project', attachment.ref_id);
+      }
       return { ok: true };
     } catch (e) {
       return { ok: false, error: e.message };
     }
-  }, [user, refreshCurrent]);
+  }, [user, refreshCurrent, invalidateContextLinks]);
 
   const removeAttachment = useCallback(async (attachmentId) => {
     try {
@@ -473,6 +482,8 @@ export function MeetingCanvasProvider({ children }) {
         .from('meeting_attachments').delete().eq('id', attachmentId);
       if (err) throw err;
       await refreshCurrent();
+      // 🔗 회의 캐시 무효화
+      if (canvasId) invalidateContextLinks('meeting', canvasId);
       return { ok: true };
     } catch (e) {
       return { ok: false, error: e.message };
@@ -480,22 +491,61 @@ export function MeetingCanvasProvider({ children }) {
   }, [refreshCurrent]);
 
   /* ─── 액션: 액션 → 칸반 카드 일괄 변환 ─────────────────── */
-  const convertActionsToTasks = useCallback(async (canvasId, projectId) => {
-    if (!projectId) return { ok: false, error: '프로젝트를 선택해주세요.' };
+const convertActionsToTasks = useCallback(async (canvasId, projectId) => {
+  if (!canvasId || !projectId) return { ok: false, error: 'canvas/project required' };
+  try {
+    const { data, error: err } = await supabase
+      .rpc('mc_convert_actions_to_tasks', {
+        p_canvas_id: canvasId,
+        p_project_id: projectId,
+      });
+    if (err) throw err;
+    await refreshCurrent();
+
+    // 🔗 ContextLinks 캐시 무효화 — 회의/프로젝트/변환된 태스크 모두
+    invalidateContextLinks('meeting', canvasId);
+    invalidateContextLinks('project', projectId);
+    (data || []).forEach((t) => {
+      if (t?.id) invalidateContextLinks('task', t.id);
+    });
+
+    /* 🔔 변환된 카드의 담당자들에게 알림 발송
+       — RPC 가 반환한 데이터에 assignee_id 가 없을 수 있으므로
+         tasks 테이블에서 한 번 더 조회해서 정확히 가져온다. */
     try {
-      const { data, error: err } = await supabase
-        .rpc('mc_convert_actions_to_tasks', {
-          p_canvas_id: canvasId,
-          p_project_id: projectId,
+      const taskIds = (data || []).map((t) => t.id).filter(Boolean);
+      if (taskIds.length > 0) {
+        const { data: tasks } = await supabase
+          .from('tasks')
+          .select('id, title, assignee_id, due_date')
+          .in('id', taskIds);
+
+        const meetingTitle = current?.canvas?.title || '회의';
+
+        (tasks || []).forEach((t) => {
+          if (!t.assignee_id) return; // 담당자 없는 카드는 스킵
+          const dueText = t.due_date ? ` (마감 ${t.due_date})` : '';
+          createNotification({
+            toUserId: t.assignee_id,
+            type: 'task',
+            title: '회의 액션이 카드로 할당됐어요',
+            body: `"${meetingTitle}" → ${t.title}${dueText}`,
+            link: `/project?id=${projectId}&task=${t.id}`,
+            refId: t.id,
+          });
         });
-      if (err) throw err;
-      await refreshCurrent();
-      return { ok: true, converted: data || [] };
-    } catch (e) {
-      console.error('[MeetingCanvas] convertActionsToTasks:', e);
-      return { ok: false, error: e.message };
+      }
+    } catch (notifErr) {
+      console.warn('[MeetingCanvas] convertActionsToTasks 알림 실패:', notifErr);
+      /* 알림 실패해도 변환 결과는 그대로 반환 */
     }
-  }, [refreshCurrent]);
+
+    return { ok: true, converted: data || [] };
+  } catch (e) {
+    console.error('[MeetingCanvas] convertActionsToTasks:', e);
+    return { ok: false, error: e.message };
+  }
+}, [refreshCurrent, invalidateContextLinks, current, createNotification]);
 
 
   /* ─── value ────────────────────────────────────────────── */

@@ -12,6 +12,7 @@ import AdminMonitoringTab from '../components/admin/AdminMonitoringTab';
 import AdminUserEditModal from '../components/admin/AdminUserEditModal';
 import AdminNoticesTab from '../components/admin/AdminNoticesTab'
 import AdminEventsTab from '../components/admin/AdminEventsTab';
+import AdminPollsTab from '../components/admin/AdminPollsTab';
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState('attendance');
@@ -46,6 +47,7 @@ export default function Admin() {
 {activeTab === 'attendance' && <AdminAttendanceTab />}
         {activeTab === 'notices' && <AdminNoticesTab />}
         {activeTab === 'events' && <AdminEventsTab />}
+        {activeTab === 'polls' && <AdminPollsTab />}
         {activeTab === 'rooms' && <AdminRoomsTab />}
         {activeTab === 'monitoring' && <AdminMonitoringTab />}
       </div>

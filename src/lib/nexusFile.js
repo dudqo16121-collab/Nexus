@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-// ggg
+
 // ⚠️ 실제 Supabase Storage 버킷명으로 변경하세요
 const BUCKET = 'resources';
 

@@ -360,6 +360,40 @@ if (status === 'pending' && data.approvers?.[0]?.id) {
     setLoading(false);
   }, []);
 
+  /* ─── 일괄 선택 (2단계) ─── */
+// 이 상태들은 컴포넌트 레벨에서도 관리 가능하지만, 
+// 일괄 처리 후 reset을 명확히 하기 위해 컨텍스트에 둠.
+
+/* 일괄 승인 */
+const processBulk = useCallback(async (docIds, action, comment = '') => {
+  if (!docIds?.length) return { ok: false, error: '선택된 문서가 없습니다' };
+  
+  const results = [];
+  let successCount = 0;
+  let failCount = 0;
+  
+  for (const docId of docIds) {
+    try {
+      const res = await processApproval(docId, action, comment);
+      if (res.ok) successCount++;
+      else failCount++;
+      results.push({ docId, ...res });
+    } catch (e) {
+      failCount++;
+      results.push({ docId, ok: false, error: e.message });
+    }
+  }
+  
+  await fetchApprovals();
+  
+  return {
+    ok: successCount > 0,
+    successCount,
+    failCount,
+    results,
+  };
+}, [processApproval, fetchApprovals]);
+
   // 단일 문서 조회 (3단계 상세 뷰에서 사용)
   const fetchApproval = useCallback(async (docId) => {
     const { data, error } = await supabase
@@ -429,32 +463,115 @@ if (status === 'pending' && data.approvers?.[0]?.id) {
     return rows;
   }, [approvals, tab, typeFilter, urgencyFilter, search, isMyTurn, user]);
 
-  // KPI 계산 — derived
-  const kpi = useMemo(() => {
-    const now = new Date();
-    const thisMonth = (iso) => {
-      const d = new Date(iso);
-      return (
-        d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
-      );
-    };
+  /* 인접 문서 ID 가져오기 — 현재 보고 있는 문서의 이전/다음 */
+const getAdjacentDocId = useCallback((currentDocId, direction = 'next') => {
+  const list = filteredApprovals;
+  const idx = list.findIndex((d) => d.id === currentDocId);
+  if (idx < 0) return null;
+  const targetIdx = direction === 'next' ? idx + 1 : idx - 1;
+  return list[targetIdx]?.id || null;
+}, [filteredApprovals]);
 
-    return {
-      pendingMe: approvals.filter((doc) => isMyTurn(doc)).length,
-      myDraft: approvals.filter(
-        (doc) =>
-          user &&
-          doc.drafter_id === user.id &&
-          ['draft', 'pending', 'in_progress'].includes(doc.status)
-      ).length,
-      approved: approvals.filter(
-        (doc) => doc.status === 'approved' && thisMonth(doc.updated_at)
-      ).length,
-      rejected: approvals.filter(
-        (doc) => doc.status === 'rejected' && thisMonth(doc.updated_at)
-      ).length,
-    };
-  }, [approvals, isMyTurn, user]);
+const [powerModeActive, setPowerModeActive] = useState(false);
+const [powerModeProcessed, setPowerModeProcessed] = useState(0);
+
+/* 내 결재 대기 문서 ID 목록 (빠른모드 순회용) */
+const myPendingDocIds = useMemo(() => {
+  return approvals
+    .filter((doc) => isMyTurn(doc))
+    .map((doc) => doc.id);
+}, [approvals, isMyTurn]);
+
+const startPowerMode = useCallback(() => {
+  setPowerModeActive(true);
+  setPowerModeProcessed(0);
+}, []);
+
+const exitPowerMode = useCallback(() => {
+  setPowerModeActive(false);
+  setPowerModeProcessed(0);
+}, []);
+
+const incrementPowerModeProcessed = useCallback(() => {
+  setPowerModeProcessed((n) => n + 1);
+}, []);
+
+  // KPI 계산 — derived (확장: 임시저장 + 평균처리시간 + 양식별 카운트)
+const kpi = useMemo(() => {
+  const now = new Date();
+  const thisMonth = (iso) => {
+    const d = new Date(iso);
+    return (
+      d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
+    );
+  };
+
+  /* 평균 처리 시간 — 이번달 완료된 내 결재 문서 기준
+     (drafter 가 나인 문서 중 approved/rejected 된 것들의
+      created_at → updated_at 시간 차) */
+  const myCompletedThisMonth = approvals.filter(
+    (doc) =>
+      user &&
+      doc.drafter_id === user.id &&
+      ['approved', 'rejected'].includes(doc.status) &&
+      thisMonth(doc.updated_at)
+  );
+  let avgHours = 0;
+  if (myCompletedThisMonth.length > 0) {
+    const totalMs = myCompletedThisMonth.reduce((acc, doc) => {
+      const start = new Date(doc.created_at).getTime();
+      const end = new Date(doc.updated_at).getTime();
+      return acc + (end - start);
+    }, 0);
+    avgHours = totalMs / myCompletedThisMonth.length / (1000 * 60 * 60);
+  }
+
+  /* 양식별 카운트 — 진행 중인 것만 */
+  const byType = {};
+  approvals.forEach((doc) => {
+    if (['draft', 'pending', 'in_progress'].includes(doc.status)) {
+      const t = doc.type || '기타';
+      byType[t] = (byType[t] || 0) + 1;
+    }
+  });
+
+  /* 이번 주 활동 — 내가 처리한 (결재한) 건수 */
+  const weekStart = new Date(now);
+  weekStart.setHours(0, 0, 0, 0);
+  const day = weekStart.getDay() || 7;
+  weekStart.setDate(weekStart.getDate() - (day - 1));
+
+  const weekProcessed = approvals.filter((doc) => {
+    if (!user) return false;
+    /* 내가 승인/반려한 문서 — approvers 에서 내가 처리한 게 있는지 */
+    const myAction = (doc.approvers || []).find(
+      (a) => a.id === user.id && a.acted_at && new Date(a.acted_at) >= weekStart
+    );
+    return !!myAction;
+  }).length;
+
+  return {
+    pendingMe: approvals.filter((doc) => isMyTurn(doc)).length,
+    myDraft: approvals.filter(
+      (doc) =>
+        user &&
+        doc.drafter_id === user.id &&
+        ['pending', 'in_progress'].includes(doc.status)
+    ).length,
+    drafts: approvals.filter(
+      (doc) => user && doc.drafter_id === user.id && doc.status === 'draft'
+    ).length,
+    approved: approvals.filter(
+      (doc) => doc.status === 'approved' && thisMonth(doc.updated_at)
+    ).length,
+    rejected: approvals.filter(
+      (doc) => doc.status === 'rejected' && thisMonth(doc.updated_at)
+    ).length,
+    avgHours: Math.round(avgHours * 10) / 10, // 소숫점 1자리
+    weekProcessed,
+    byType,
+  };
+}, [approvals, isMyTurn, user]);
 
   return (
     <ApprovalContext.Provider
@@ -468,8 +585,18 @@ if (status === 'pending' && data.approvers?.[0]?.id) {
         fetchApproverOptions,    // ⭐ 추가
         createApproval,
         processApproval,       // ⭐ 추가
+        processBulk,
+        getAdjacentDocId,
         cancelApproval,        // ⭐ 추가
         adminDeleteApproval,
+        /* 빠른 모드 */
+        powerModeActive,
+        powerModeProcessed,
+        myPendingDocIds,
+        startPowerMode,
+        exitPowerMode,
+        incrementPowerModeProcessed,
+        cancelApproval,
         // 필터 상태
         tab,
         typeFilter,
