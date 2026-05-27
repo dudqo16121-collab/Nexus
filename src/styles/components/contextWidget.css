@@ -1,0 +1,149 @@
+/* src/styles/components/contextWidget.css
+   ──────────────────────────────────────────
+   횡단 연결 위젯 — task/회의/결재/위키 상세 어디서든 사용
+   ────────────────────────────────────────── */
+
+.ctx-widget {
+  margin: 24px 0;
+  padding: 18px 0 0;
+  border-top: 2px solid var(--border-color);
+}
+.ctx-widget-compact {
+  margin: 14px 0;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--border-color);
+}
+.ctx-widget-loading {
+  padding: 16px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.ctx-widget-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-main);
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: inherit;
+  padding: 6px 0;
+  margin-bottom: 14px;
+}
+.ctx-widget-header:hover { color: var(--primary-color); }
+.ctx-widget-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.ctx-widget-title i.fa-diagram-project {
+  color: var(--primary-color);
+}
+.ctx-widget-count {
+  background: rgba(67, 97, 238, 0.12);
+  color: var(--primary-color);
+  padding: 2px 9px;
+  border-radius: 10px;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+.ctx-widget-chev {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  transition: transform 0.2s;
+}
+.ctx-widget-chev.rotated { transform: rotate(180deg); }
+
+.ctx-widget-body {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* 섹션 헤더 */
+.ctx-section-title {
+  margin: 0 0 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ctx-section-count {
+  background: var(--bg-2);
+  color: var(--text-muted);
+  padding: 1px 8px;
+  border-radius: 8px;
+  font-size: 0.72rem;
+}
+
+/* 카드 그리드 */
+.ctx-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+
+.ctx-card {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: 0.15s;
+}
+.ctx-card:hover {
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(67, 97, 238, 0.08);
+}
+
+.ctx-card-badge {
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.ctx-card-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ctx-card-sub {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ctx-card-reason {
+  margin-top: 4px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-style: italic;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border-color);
+}
+
+body.dark-mode .ctx-card:hover {
+  box-shadow: 0 8px 20px rgba(67, 97, 238, 0.18);
+}

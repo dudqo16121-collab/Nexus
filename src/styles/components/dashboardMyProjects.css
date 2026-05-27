@@ -1,0 +1,113 @@
+/* src/styles/components/dashboardMyProjects.css
+   ──────────────────────────────────────────
+   대시보드 내 프로젝트 위험 신호 위젯
+   ────────────────────────────────────────── */
+
+.dmp-total-badge {
+  margin-left: 8px;
+  background: rgba(247, 37, 133, 0.12);
+  color: #f72585;
+  padding: 2px 9px;
+  border-radius: 10px;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.dmp-loading,
+.dmp-empty {
+  text-align: center;
+  padding: 30px 16px;
+  color: var(--text-muted);
+}
+.dmp-empty i {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 10px;
+  opacity: 0.4;
+}
+.dmp-empty p {
+  margin: 0;
+  font-size: 0.88rem;
+}
+
+.dmp-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.dmp-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+.dmp-row:hover {
+  border-color: var(--primary-color);
+  transform: translateX(2px);
+  box-shadow: 0 4px 12px rgba(67, 97, 238, 0.06);
+}
+
+.dmp-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dmp-title {
+  flex: 1;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.dmp-badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.dmp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.dmp-badge-overdue {
+  background: rgba(247, 37, 133, 0.12);
+  color: #f72585;
+}
+.dmp-badge-urgent {
+  background: rgba(255, 159, 28, 0.14);
+  color: #ff9f1c;
+}
+.dmp-badge-noowner {
+  background: rgba(148, 163, 184, 0.18);
+  color: #64748b;
+}
+.dmp-badge-ok {
+  background: rgba(6, 214, 160, 0.12);
+  color: #06d6a0;
+}
+
+body.dark-mode .dmp-badge-noowner {
+  background: rgba(148, 163, 184, 0.25);
+  color: #cbd5e1;
+}
