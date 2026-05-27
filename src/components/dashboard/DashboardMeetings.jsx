@@ -68,20 +68,27 @@ export default function DashboardMeetings() {
     navigate('/meetings');
   };
 
-  return (
-    <div className="dashboard-widget dashboard-meetings-widget">
-      <div className="widget-header">
-        <h3>
-          <i className="fa-solid fa-microphone" style={{ color: '#ec4899' }} />
+return (
+    <section className="panel dashboard-meetings-widget" id="dashboard-meetings">
+      <div className="panel-header" style={{ marginBottom: 15 }}>
+        <h2>
+          <i
+            className="fa-solid fa-microphone"
+            style={{ color: '#ec4899', marginRight: 8 }}
+          />
           다가오는 회의
-        </h3>
-        <button
-          type="button"
-          className="widget-action-btn"
+        </h2>
+        <span
+          style={{
+            fontSize: '0.85rem',
+            cursor: 'pointer',
+            color: 'var(--primary-color)',
+            fontWeight: 600,
+          }}
           onClick={() => navigate('/meetings')}
         >
-          전체 <i className="fa-solid fa-arrow-right" />
-        </button>
+          전체 보기 <i className="fa-solid fa-arrow-right" style={{ marginLeft: 3 }} />
+        </span>
       </div>
 
       <div className="dashboard-meetings-list">
@@ -142,7 +149,7 @@ export default function DashboardMeetings() {
             );
           })
         )}
-      </div>
-    </div>
+</div>
+    </section>
   );
 }

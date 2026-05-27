@@ -10,9 +10,17 @@ import { useEffect } from 'react';
  *   - children: 모달 내용
  *   - size: 'sm' | 'md' | 'lg' (default: 'lg')
  *   - headerExtra: 헤더 우측에 추가할 버튼 등 (선택)
+ *   - hideHeader: 기본 헤더 숨김 (커스텀 헤더를 내부에 그릴 때)
  */
-export default function Modal({ isOpen, onClose, title, children, size = 'lg', headerExtra }) {
-  /* ESC 키로 닫기 */
+export default function Modal({
+  isOpen,
+  onClose,
+  title,
+  children,
+  size = 'lg',
+  headerExtra,
+  hideHeader = false,
+}) {
   useEffect(() => {
     if (!isOpen) return;
     const handleKey = (e) => {
@@ -22,7 +30,6 @@ export default function Modal({ isOpen, onClose, title, children, size = 'lg', h
     return () => document.removeEventListener('keydown', handleKey);
   }, [isOpen, onClose]);
 
-  /* 모달 열렸을 때 body 스크롤 잠그기 */
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -32,7 +39,6 @@ export default function Modal({ isOpen, onClose, title, children, size = 'lg', h
 
   if (!isOpen) return null;
 
-  /* 백드롭 클릭 시 닫기 (모달 내부 클릭은 무시) */
   const handleBackdropClick = (e) => {
     if (e.target === e.currentTarget) onClose();
   };
@@ -40,15 +46,17 @@ export default function Modal({ isOpen, onClose, title, children, size = 'lg', h
   return (
     <div className="modal-overlay open" onClick={handleBackdropClick}>
       <div className={`modal-box ${size}`}>
-        <div className="modal-header">
-          <h2>{title}</h2>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            {headerExtra}
-            <button className="modal-close" onClick={onClose}>
-              <i className="fa-solid fa-xmark"></i>
-            </button>
+        {!hideHeader && (
+          <div className="modal-header">
+            <h2>{title}</h2>
+            <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+              {headerExtra}
+              <button className="modal-close" onClick={onClose}>
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
         <div className="modal-body">
           {children}
         </div>
