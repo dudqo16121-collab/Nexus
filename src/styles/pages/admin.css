@@ -1617,3 +1617,937 @@ body.dark-mode #view-admin .log-box .log-error {
   flex-shrink: 0;
   white-space: nowrap;
 }
+/* ════════════════════════════════════════════
+   Admin — 도전 과제 관리 탭
+   ════════════════════════════════════════════ */
+
+.admin-missions-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.admin-missions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+.admin-missions-header h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin: 0 0 4px;
+  color: var(--text-main);
+}
+.admin-missions-header p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+.admin-missions-add-btn {
+  background: linear-gradient(135deg, #4361ee, #8338ec);
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: 0.15s;
+  flex-shrink: 0;
+}
+.admin-missions-add-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(67, 97, 238, 0.25);
+}
+.admin-missions-add-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-missions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-missions-empty {
+  text-align: center;
+  padding: 50px 20px;
+  color: var(--text-muted);
+  background: var(--input-bg);
+  border: 1px dashed var(--border-color);
+  border-radius: 14px;
+}
+.admin-missions-empty i { font-size: 2.5rem; opacity: 0.4; margin-bottom: 12px; display: block; }
+.admin-missions-empty p { font-size: 0.95rem; margin-bottom: 14px; }
+.admin-missions-empty-btn {
+  background: linear-gradient(135deg, #4361ee, #8338ec);
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  font-family: inherit;
+}
+
+/* 미션 행 */
+.admin-mission-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  transition: 0.15s;
+}
+.admin-mission-row:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+.admin-mission-row.paused {
+  opacity: 0.6;
+  background: var(--bg-2);
+}
+
+.admin-mission-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.admin-mission-info {
+  flex: 1;
+  min-width: 0;
+}
+.admin-mission-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.admin-mission-title-row strong {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.admin-mission-seed-badge,
+.admin-mission-paused-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.admin-mission-seed-badge {
+  background: rgba(6, 214, 160, 0.12);
+  color: #06d6a0;
+  border: 1px solid rgba(6, 214, 160, 0.3);
+}
+.admin-mission-paused-badge {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.admin-mission-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin: 0 0 6px;
+  line-height: 1.4;
+}
+
+.admin-mission-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.admin-mission-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.admin-mission-activity {
+  font-weight: 700;
+}
+.admin-mission-stats {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  background: var(--bg-2);
+  padding: 3px 8px;
+  border-radius: 8px;
+}
+
+.admin-mission-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.admin-mission-action-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  transition: 0.15s;
+}
+.admin-mission-action-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background: var(--hover-bg);
+}
+.admin-mission-action-btn.danger:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+/* ──────────────────────────────
+   미션 작성/수정 폼
+   ────────────────────────────── */
+
+.admin-mission-form {
+  background: var(--panel-bg);
+  border: 2px solid var(--primary-color);
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(67, 97, 238, 0.1);
+}
+
+.admin-mission-form-head {
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+.admin-mission-form-head h4 {
+  font-size: 1rem;
+  font-weight: 800;
+  margin: 0;
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.admin-mission-form-head h4 i {
+  color: var(--primary-color);
+}
+
+.admin-mission-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 14px;
+}
+
+.admin-mission-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.admin-mission-form-field.full {
+  grid-column: 1 / -1;
+}
+.admin-mission-form-field label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.admin-mission-form-field label .req {
+  color: #ef4444;
+}
+.admin-mission-form-field label .hint {
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-left: 4px;
+}
+.admin-mission-form-field input,
+.admin-mission-form-field textarea,
+.admin-mission-form-field select {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.88rem;
+  box-sizing: border-box;
+  outline: none;
+  transition: 0.15s;
+}
+.admin-mission-form-field input:focus,
+.admin-mission-form-field textarea:focus,
+.admin-mission-form-field select:focus {
+  border-color: var(--primary-color);
+}
+.admin-mission-form-field textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* 활동 타입 그리드 */
+.admin-mission-activity-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.admin-mission-activity-btn {
+  background: transparent;
+  border: 1px solid;
+  padding: 9px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: 0.15s;
+}
+.admin-mission-activity-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* 아이콘 그리드 */
+.admin-mission-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 6px;
+}
+.admin-mission-icon-btn {
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  padding: 0;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.15s;
+}
+.admin-mission-icon-btn:hover:not(.active) {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+/* 색상 팔레트 */
+.admin-mission-color-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.admin-mission-color-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.85rem;
+  transition: 0.15s;
+}
+.admin-mission-color-btn:hover {
+  transform: scale(1.1);
+}
+.admin-mission-color-btn.active {
+  border-color: var(--text-main);
+  box-shadow: 0 0 0 2px var(--panel-bg);
+}
+
+/* 미리보기 */
+.admin-mission-preview {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--border-color);
+}
+.admin-mission-preview-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+.admin-mission-preview-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+/* 액션 버튼 */
+.admin-mission-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-color);
+}
+
+/* 반응형 */
+@media (max-width: 1024px) {
+  .admin-mission-form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .admin-mission-activity-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .admin-mission-icon-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+@media (max-width: 640px) {
+  .admin-mission-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .admin-mission-row {
+    flex-wrap: wrap;
+  }
+  .admin-mission-info {
+    width: 100%;
+  }
+  .admin-mission-meta {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+/* ════════════════════════════════════════════
+   Admin — 뱃지 관리 탭
+   ════════════════════════════════════════════ */
+
+.admin-badges-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.admin-badges-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+.admin-badges-header h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin: 0 0 4px;
+  color: var(--text-main);
+}
+.admin-badges-header p {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+.admin-badges-add-btn {
+  background: linear-gradient(135deg, #f59e0b, #ec4899);
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: 0.15s;
+  flex-shrink: 0;
+}
+.admin-badges-add-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.3);
+}
+.admin-badges-add-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-badges-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+.admin-badges-list::-webkit-scrollbar { width: 6px; }
+.admin-badges-list::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+
+.admin-badges-empty {
+  text-align: center;
+  padding: 50px 20px;
+  color: var(--text-muted);
+  background: var(--input-bg);
+  border: 1px dashed var(--border-color);
+  border-radius: 14px;
+}
+.admin-badges-empty i { font-size: 2.5rem; opacity: 0.4; margin-bottom: 12px; display: block; }
+.admin-badges-empty p { font-size: 0.95rem; margin-bottom: 14px; }
+.admin-badges-empty-btn {
+  background: linear-gradient(135deg, #f59e0b, #ec4899);
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  font-family: inherit;
+}
+
+/* 뱃지 행 */
+.admin-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  transition: 0.15s;
+}
+.admin-badge-row:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+.admin-badge-row.paused {
+  opacity: 0.6;
+}
+
+.admin-badge-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.admin-badge-info {
+  flex: 1;
+  min-width: 0;
+}
+.admin-badge-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+.admin-badge-title-row strong {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.admin-badge-rarity-tag {
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 8px;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.admin-badge-paused-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  padding: 2px 8px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.admin-badge-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin: 0 0 6px;
+  line-height: 1.4;
+}
+
+.admin-badge-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.admin-badge-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.admin-badge-condition {
+  font-weight: 700;
+}
+.admin-badge-condition strong {
+  margin-left: 2px;
+}
+.admin-badge-earned-count {
+  margin-left: auto;
+  font-size: 0.74rem;
+  background: var(--bg-2);
+  padding: 3px 8px;
+  border-radius: 8px;
+}
+
+.admin-badge-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.admin-badge-action-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  transition: 0.15s;
+}
+.admin-badge-action-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  background: var(--hover-bg);
+}
+.admin-badge-action-btn.danger:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+/* ──────────────────────────────
+   뱃지 작성/수정 폼
+   ────────────────────────────── */
+
+.admin-badge-form {
+  background: var(--panel-bg);
+  border: 2px solid #f59e0b;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.1);
+}
+
+.admin-badge-form-head {
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+.admin-badge-form-head h4 {
+  font-size: 1rem;
+  font-weight: 800;
+  margin: 0;
+  color: var(--text-main);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.admin-badge-form-head h4 i {
+  color: #f59e0b;
+}
+
+.admin-badge-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 14px;
+}
+
+.admin-badge-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.admin-badge-form-field.full {
+  grid-column: 1 / -1;
+}
+.admin-badge-form-field label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.admin-badge-form-field label .req {
+  color: #ef4444;
+}
+.admin-badge-form-field label .hint {
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-left: 4px;
+}
+.admin-badge-form-field input,
+.admin-badge-form-field textarea,
+.admin-badge-form-field select {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.88rem;
+  box-sizing: border-box;
+  outline: none;
+  transition: 0.15s;
+}
+.admin-badge-form-field input:focus,
+.admin-badge-form-field textarea:focus,
+.admin-badge-form-field select:focus {
+  border-color: #f59e0b;
+}
+.admin-badge-form-field textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* 조건 타입 그리드 */
+.admin-badge-condition-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.admin-badge-condition-btn {
+  background: transparent;
+  border: 1px solid;
+  padding: 9px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: 0.15s;
+}
+.admin-badge-condition-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* 희귀도 그리드 */
+.admin-badge-rarity-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.admin-badge-rarity-btn {
+  background: transparent;
+  border: 2px solid;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: 0.15s;
+}
+.admin-badge-rarity-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* 아이콘 */
+.admin-badge-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 6px;
+}
+.admin-badge-icon-btn {
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  padding: 0;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.15s;
+}
+.admin-badge-icon-btn:hover:not(.active) {
+  border-color: #f59e0b;
+  color: #f59e0b;
+}
+
+/* 색상 */
+.admin-badge-color-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.admin-badge-color-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.85rem;
+  transition: 0.15s;
+}
+.admin-badge-color-btn:hover {
+  transform: scale(1.1);
+}
+.admin-badge-color-btn.active {
+  border-color: var(--text-main);
+  box-shadow: 0 0 0 2px var(--panel-bg);
+}
+
+/* 미리보기 */
+.admin-badge-preview {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--border-color);
+}
+.admin-badge-preview-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+.admin-badge-preview-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
+  background: var(--input-bg);
+  border: 2px solid var(--rarity-color);
+  border-radius: 16px;
+  position: relative;
+  max-width: 220px;
+  margin: 0 auto;
+  box-shadow: 0 4px 14px var(--rarity-glow);
+}
+.admin-badge-preview-rarity {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--rarity-color);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.admin-badge-preview-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: #fff;
+  margin: 8px auto 12px;
+}
+.admin-badge-preview-title {
+  font-size: 0.95rem;
+  font-weight: 800;
+  margin: 0 0 4px;
+  color: var(--text-main);
+}
+.admin-badge-preview-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+.admin-badge-preview-bonus {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+  padding: 3px 10px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.admin-badge-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-color);
+}
+
+@media (max-width: 1024px) {
+  .admin-badge-form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .admin-badge-condition-grid,
+  .admin-badge-rarity-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .admin-badge-icon-grid {
+    grid-template-columns: repeat(8, 1fr);
+  }
+}

@@ -1080,3 +1080,1630 @@ body.dark-mode .hub-hero-cta {
   justify-content: flex-end;
   margin-top: 4px;
 }
+/* ════════════════════════════════════════════
+   INJOY Hub — 일일 체크인 카드
+   ════════════════════════════════════════════ */
+
+.hub-checkin-card {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  padding: 22px 24px;
+  margin: 0 28px 24px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.hub-checkin-card-main {
+  display: flex;
+  gap: 24px;
+  align-items: stretch;
+}
+
+.hub-checkin-card-left {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hub-checkin-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.hub-checkin-card-fire {
+  font-size: 2.5rem;
+  filter: drop-shadow(0 4px 8px rgba(255, 89, 0, 0.3));
+}
+.hub-checkin-card-streak {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.hub-checkin-card-streak strong {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1;
+}
+.hub-checkin-card-streak span {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.hub-checkin-card-next {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.hub-checkin-card-next strong {
+  color: #f59e0b;
+  font-weight: 700;
+}
+
+.hub-checkin-progress {
+  position: relative;
+  padding-bottom: 22px;
+}
+.hub-checkin-progress-track {
+  height: 8px;
+  background: var(--bg-2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.hub-checkin-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b, #ef4444);
+  border-radius: 8px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hub-checkin-progress-milestones {
+  position: relative;
+  height: 14px;
+  margin-top: 4px;
+}
+.hub-checkin-milestone-tick {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.hub-checkin-milestone-tick.reached {
+  color: #f59e0b;
+}
+
+.hub-checkin-week {
+  display: flex;
+  gap: 6px;
+  justify-content: space-between;
+}
+.hub-checkin-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  max-width: 44px;
+}
+.hub-checkin-day-weekday {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.hub-checkin-day-circle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--bg-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  transition: 0.2s;
+}
+.hub-checkin-day.today .hub-checkin-day-circle {
+  border-color: var(--primary-color);
+  border-width: 2px;
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+.hub-checkin-day.checked .hub-checkin-day-circle {
+  border-color: transparent;
+}
+
+/* 우측 — CTA */
+.hub-checkin-card-action {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+.hub-checkin-cta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: 0.2s;
+  min-width: 220px;
+}
+.hub-checkin-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.08);
+}
+.hub-checkin-cta.primary {
+  background: linear-gradient(135deg, #4361ee, #8338ec);
+  border: none;
+  color: #fff;
+}
+.hub-checkin-cta.primary:hover {
+  box-shadow: 0 8px 22px rgba(67, 97, 238, 0.35);
+}
+.hub-checkin-cta.done {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.06), rgba(34, 197, 94, 0.02));
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.hub-checkin-cta-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+}
+.hub-checkin-cta.done .hub-checkin-cta-icon {
+  background: transparent;
+}
+.hub-checkin-cta-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+.hub-checkin-cta-text strong {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+.hub-checkin-cta-text span {
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+.hub-checkin-cta.done .hub-checkin-cta-text strong {
+  color: var(--text-main);
+}
+.hub-checkin-cta.done .hub-checkin-cta-text span {
+  color: #22c55e;
+  font-weight: 700;
+}
+.hub-checkin-cta-edit {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* ════════════════════════════════════════════
+   체크인 모달
+   ════════════════════════════════════════════ */
+
+.hub-checkin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hub-checkin-streak-info {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(239, 68, 68, 0.06));
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 14px;
+  margin-bottom: 16px;
+}
+.hub-checkin-streak-fire {
+  font-size: 2rem;
+}
+.hub-checkin-streak-num {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--text-main);
+}
+.hub-checkin-streak-num span {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.hub-checkin-next {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.hub-checkin-reward {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.hub-checkin-reward span {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #f59e0b;
+}
+.hub-checkin-reward small {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.hub-checkin-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-top: 8px;
+}
+.hub-checkin-label-hint {
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-left: 6px;
+}
+
+.hub-checkin-mood-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+.hub-checkin-mood-btn {
+  background: var(--input-bg);
+  border: 2px solid var(--border-color);
+  padding: 12px 6px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: 0.15s;
+}
+.hub-checkin-mood-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+}
+.hub-checkin-mood-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+.hub-checkin-mood-emoji {
+  font-size: 1.6rem;
+}
+.hub-checkin-mood-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.hub-checkin-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.88rem;
+  resize: vertical;
+  box-sizing: border-box;
+  line-height: 1.5;
+  outline: none;
+}
+.hub-checkin-textarea:focus {
+  border-color: var(--primary-color);
+}
+
+/* 축하 화면 */
+.hub-checkin-celebration {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 20px 10px 10px;
+  gap: 14px;
+}
+.hub-checkin-burst {
+  font-size: 4rem;
+  animation: hub-burst 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.hub-checkin-burst.milestone {
+  font-size: 5rem;
+}
+@keyframes hub-burst {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.hub-checkin-celebration h3 {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0;
+}
+.hub-checkin-points {
+  font-size: 2.2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #f59e0b, #ef4444);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hub-checkin-streak {
+  font-size: 1rem;
+  color: var(--text-muted);
+}
+.hub-checkin-streak strong {
+  color: var(--text-main);
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+.hub-checkin-milestone-msg {
+  background: linear-gradient(135deg, #f59e0b, #ec4899);
+  color: #fff;
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-weight: 800;
+  font-size: 0.9rem;
+}
+.hub-checkin-close-btn {
+  margin-top: 10px;
+  background: var(--primary-color);
+  color: #fff;
+  border: none;
+  padding: 10px 28px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+.hub-checkin-close-btn:hover {
+  opacity: 0.9;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .hub-checkin-card-main {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .hub-checkin-cta {
+    width: 100%;
+  }
+  .hub-checkin-mood-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+/* ════════════════════════════════════════════
+   INJOY Hub — 자동 미션 (이번 주 도전 과제)
+   ════════════════════════════════════════════ */
+
+.hub-auto-card {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 18px 20px;
+  margin-bottom: 18px;
+}
+
+.hub-auto-week-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.hub-auto-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding-right: 6px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-color) transparent;
+}
+
+.hub-auto-list::-webkit-scrollbar {
+  width: 6px;
+}
+.hub-auto-list::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+.hub-auto-list::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+.hub-auto-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.hub-auto-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  transition: 0.15s;
+}
+.hub-auto-item:hover {
+  border-color: var(--primary-color);
+}
+.hub-auto-item.completed {
+  border-color: rgba(34, 197, 94, 0.4);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.04), transparent);
+}
+.hub-auto-item.claimed {
+  opacity: 0.6;
+}
+
+.hub-auto-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.hub-auto-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.hub-auto-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.hub-auto-title-row strong {
+  font-size: 0.92rem;
+  color: var(--text-main);
+}
+.hub-auto-points {
+  margin-left: auto;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+.hub-auto-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.hub-auto-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.hub-auto-progress-track {
+  flex: 1;
+  height: 6px;
+  background: var(--bg-2);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.hub-auto-progress-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hub-auto-progress-text {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.hub-auto-progress-text strong {
+  color: var(--text-main);
+}
+
+.hub-auto-action {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+.hub-auto-claim-btn {
+  background: linear-gradient(135deg, #f59e0b, #ec4899);
+  color: #fff;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  animation: hub-auto-pulse 2s infinite;
+}
+.hub-auto-claim-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.3);
+}
+.hub-auto-claim-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  animation: none;
+}
+
+@keyframes hub-auto-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+}
+
+.hub-auto-claimed {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #22c55e;
+  padding: 8px 14px;
+}
+
+.hub-auto-remain {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  min-width: 50px;
+}
+.hub-auto-remain strong {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1;
+}
+.hub-auto-remain span {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.hub-auto-admin-hint {
+  margin-top: 14px;
+  padding: 10px 12px;
+  background: var(--bg-2);
+  border-radius: 8px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.hub-auto-admin-hint code {
+  background: var(--input-bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  color: var(--primary-color);
+  font-family: 'Courier New', monospace;
+}
+/* ════════════════════════════════════════════
+   상품 후기 — 별점 / 리스트
+   ════════════════════════════════════════════ */
+
+/* 상품 카드 안 별점 */
+.hub-product-rating {
+  margin-bottom: 8px;
+}
+
+.hub-review-summary-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+.hub-review-summary-stars i {
+  color: #d1d5db;
+  font-size: 0.85rem;
+}
+.hub-review-summary-stars i.active {
+  color: #f59e0b;
+}
+.hub-review-summary-stars strong {
+  margin-left: 6px;
+  color: var(--text-main);
+  font-weight: 700;
+}
+.hub-review-summary-stars span {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+}
+
+/* 후기 리스트 */
+.hub-review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 12px;
+}
+
+.hub-review-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--bg-2);
+  border-radius: 10px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.hub-review-summary .hub-review-summary-stars {
+  font-size: 1rem;
+}
+.hub-review-summary .hub-review-summary-stars i {
+  font-size: 1rem;
+}
+
+.hub-review-more-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.hub-review-more-btn:hover {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+.hub-review-empty {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.hub-review-empty i {
+  font-size: 1.5rem;
+  opacity: 0.5;
+}
+
+/* 개별 후기 카드 */
+.hub-review-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+}
+.hub-review-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--border-color);
+  flex-shrink: 0;
+}
+.hub-review-body {
+  flex: 1;
+  min-width: 0;
+}
+.hub-review-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
+}
+.hub-review-head strong {
+  font-size: 0.88rem;
+  color: var(--text-main);
+}
+.hub-review-item-stars {
+  display: inline-flex;
+  gap: 1px;
+}
+.hub-review-item-stars i {
+  font-size: 0.78rem;
+  color: #d1d5db;
+}
+.hub-review-item-stars i.active {
+  color: #f59e0b;
+}
+.hub-review-time {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+.hub-review-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+}
+.hub-review-actions button {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.hub-review-actions button:hover {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+.hub-review-content {
+  font-size: 0.88rem;
+  color: var(--text-main);
+  margin: 0 0 8px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.hub-review-helpful {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 5px 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.hub-review-helpful:hover {
+  border-color: #4361ee;
+  color: #4361ee;
+}
+.hub-review-helpful.active {
+  background: rgba(67, 97, 238, 0.1);
+  border-color: #4361ee;
+  color: #4361ee;
+}
+.hub-review-helpful em {
+  font-style: normal;
+  font-weight: 800;
+}
+
+/* 후기 작성 모달 */
+.hub-review-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.hub-review-product {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  background: var(--input-bg);
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+.hub-review-product-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+.hub-review-product strong {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--text-main);
+}
+.hub-review-product span {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.hub-review-rating {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 0;
+  border-top: 1px dashed var(--border-color);
+  border-bottom: 1px dashed var(--border-color);
+  margin-bottom: 14px;
+}
+.hub-review-stars {
+  display: flex;
+  gap: 6px;
+}
+.hub-review-star {
+  background: transparent;
+  border: none;
+  color: #d1d5db;
+  font-size: 2rem;
+  cursor: pointer;
+  padding: 4px;
+  transition: 0.15s;
+}
+.hub-review-star:hover {
+  transform: scale(1.15);
+}
+.hub-review-star.active {
+  color: #f59e0b;
+}
+.hub-review-rating-label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-main);
+  min-height: 20px;
+}
+
+.hub-review-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-top: 6px;
+}
+.hub-review-label-hint {
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-left: 4px;
+}
+.hub-review-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 0.9rem;
+  resize: vertical;
+  box-sizing: border-box;
+  line-height: 1.55;
+  outline: none;
+  margin-top: 4px;
+}
+.hub-review-textarea:focus {
+  border-color: var(--primary-color);
+}
+.hub-review-charcount {
+  text-align: right;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.hub-review-bonus {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(247, 37, 133, 0.06));
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-main);
+  font-size: 0.85rem;
+}
+.hub-review-bonus i {
+  color: #f59e0b;
+}
+.hub-review-bonus strong {
+  color: #f59e0b;
+  font-weight: 800;
+}
+
+/* 인벤토리 — 후기 작성 버튼 */
+.hub-inv-review-btn {
+  background: transparent;
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.hub-inv-review-btn:hover {
+  background: var(--primary-color);
+  color: #fff;
+}
+
+.hub-inv-review-toggle {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.hub-inv-review-toggle:hover {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+}
+
+/* 인벤토리 카드 아래 펼친 후기 영역 */
+.hub-inv-reviews {
+  margin-top: 8px;
+  margin-left: 20px;
+  padding: 14px 16px;
+  background: var(--bg-2);
+  border-left: 3px solid var(--primary-color);
+  border-radius: 0 12px 12px 0;
+}
+/* ════════════════════════════════════════════
+   INJOY Hub — Kudos 반응 (이모지 버튼)
+   ════════════════════════════════════════════ */
+
+.hub-kudos-reactions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.hub-kudos-reaction-btn {
+  background: var(--bg-2);
+  border: 1px solid transparent;
+  padding: 5px 10px;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: 0.15s;
+  line-height: 1;
+}
+.hub-kudos-reaction-btn:hover {
+  background: var(--hover-bg);
+  transform: scale(1.08);
+}
+.hub-kudos-reaction-btn.mine {
+  background: rgba(247, 37, 133, 0.12);
+  border-color: rgba(247, 37, 133, 0.4);
+}
+.hub-kudos-reaction-btn.has-count {
+  padding: 5px 12px;
+}
+.hub-kudos-reaction-emoji {
+  font-size: 1rem;
+  filter: grayscale(0.3);
+  transition: 0.15s;
+}
+.hub-kudos-reaction-btn.mine .hub-kudos-reaction-emoji,
+.hub-kudos-reaction-btn.has-count .hub-kudos-reaction-emoji {
+  filter: none;
+}
+.hub-kudos-reaction-count {
+  font-style: normal;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+/* Compact 모드 — 반응 있는 것만 작게 */
+.hub-kudos-reactions.compact {
+  gap: 4px;
+  margin-top: 6px;
+}
+.hub-kudos-reaction-chip {
+  background: var(--bg-2);
+  border: 1px solid var(--border-color);
+  padding: 3px 9px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  transition: 0.15s;
+}
+.hub-kudos-reaction-chip:hover {
+  background: var(--hover-bg);
+}
+.hub-kudos-reaction-chip.mine {
+  background: rgba(247, 37, 133, 0.12);
+  border-color: rgba(247, 37, 133, 0.4);
+}
+.hub-kudos-reaction-chip span {
+  font-size: 0.88rem;
+}
+.hub-kudos-reaction-chip em {
+  font-style: normal;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+/* ════════════════════════════════════════════
+   INJOY Hub — Kudos Wall (이번 주 베스트)
+   ════════════════════════════════════════════ */
+
+.hub-kudos-wall-card {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  padding: 22px 24px;
+  margin: 0 28px 24px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04);
+}
+
+.hub-kudos-wall-subtitle {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(247, 37, 133, 0.08);
+  padding: 4px 10px;
+  border-radius: 10px;
+}
+
+.hub-kudos-wall-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+}
+.hub-kudos-wall-empty i {
+  font-size: 2.5rem;
+  opacity: 0.4;
+  margin-bottom: 12px;
+  display: block;
+}
+.hub-kudos-wall-empty p {
+  font-size: 0.95rem;
+  margin: 0 0 4px;
+  color: var(--text-main);
+}
+.hub-kudos-wall-empty span {
+  font-size: 0.82rem;
+}
+
+.hub-kudos-wall-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  gap: 12px;
+}
+
+.hub-kudos-wall-card-item {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  transition: 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.hub-kudos-wall-card-item:hover {
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+}
+.hub-kudos-wall-card-item.top3 {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.06), rgba(247, 37, 133, 0.03));
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.hub-kudos-wall-rank {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  font-weight: 800;
+  border-radius: 12px;
+  background: var(--bg-2);
+}
+.hub-kudos-wall-rank.rank-1 {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  font-size: 1.5rem;
+}
+.hub-kudos-wall-rank.rank-2 {
+  background: linear-gradient(135deg, #e5e7eb, #9ca3af);
+  font-size: 1.5rem;
+}
+.hub-kudos-wall-rank.rank-3 {
+  background: linear-gradient(135deg, #fbb072, #d97706);
+  font-size: 1.5rem;
+}
+.hub-kudos-wall-card-item:not(.top3) .hub-kudos-wall-rank {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.hub-kudos-wall-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hub-kudos-wall-people {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.hub-kudos-wall-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-color: var(--border-color);
+  flex-shrink: 0;
+}
+.hub-kudos-wall-arrow {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+.hub-kudos-wall-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.hub-kudos-wall-time {
+  margin-left: auto;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.hub-kudos-wall-message {
+  font-size: 0.9rem;
+  color: var(--text-main);
+  margin: 4px 0;
+  line-height: 1.5;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .hub-kudos-wall-grid {
+    grid-template-columns: 1fr;
+  }
+  .hub-kudos-wall-card {
+    margin: 0 16px 20px;
+    padding: 18px;
+  }
+}
+/* ════════════════════════════════════════════
+   INJOY Hub — 뱃지 진열장
+   ════════════════════════════════════════════ */
+
+.hub-badges-card {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 20px 22px;
+  margin-bottom: 18px;
+}
+
+.hub-badges-stats {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  background: rgba(245, 158, 11, 0.1);
+  padding: 4px 12px;
+  border-radius: 12px;
+}
+.hub-badges-stats strong {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #f59e0b;
+}
+.hub-badges-stats span {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.hub-badges-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-color);
+}
+.hub-badges-filter {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 5px 14px;
+  border-radius: 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.hub-badges-filter:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+.hub-badges-filter.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  color: #fff;
+}
+
+.hub-badges-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.hub-badges-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+}
+.hub-badges-empty i {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 10px;
+  opacity: 0.4;
+}
+
+/* 뱃지 카드 */
+.hub-badge-card {
+  position: relative;
+  background: var(--input-bg);
+  border: 2px solid var(--border-color);
+  border-radius: 14px;
+  padding: 18px 14px 14px;
+  text-align: center;
+  cursor: default;
+  transition: 0.2s;
+  overflow: hidden;
+}
+.hub-badge-card.earned {
+  cursor: pointer;
+  border-color: var(--rarity-color);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.05),
+    transparent
+  );
+  box-shadow: 0 4px 14px var(--rarity-glow);
+}
+.hub-badge-card.earned:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px var(--rarity-glow);
+}
+.hub-badge-card.locked {
+  opacity: 0.7;
+}
+.hub-badge-card.featured {
+  background: linear-gradient(135deg, var(--rarity-color)15, transparent);
+  border-width: 3px;
+}
+
+/* 희귀도별 배경 효과 */
+.hub-badge-card.rarity-legendary.earned {
+  background: linear-gradient(180deg, rgba(251, 191, 36, 0.08), transparent);
+  animation: hub-legendary-shine 3s ease-in-out infinite;
+}
+@keyframes hub-legendary-shine {
+  0%, 100% { box-shadow: 0 4px 14px rgba(251, 191, 36, 0.4); }
+  50% { box-shadow: 0 4px 24px rgba(251, 191, 36, 0.7); }
+}
+.hub-badge-card.rarity-epic.earned {
+  background: linear-gradient(180deg, rgba(168, 85, 247, 0.06), transparent);
+}
+.hub-badge-card.rarity-rare.earned {
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.05), transparent);
+}
+
+.hub-badge-featured-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  z-index: 2;
+}
+
+.hub-badge-rarity-tag {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--rarity-color);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.hub-badge-card.locked .hub-badge-rarity-tag {
+  background: #9ca3af;
+}
+
+.hub-badge-icon {
+  width: 64px;
+  height: 64px;
+  margin: 8px auto 12px;
+  border-radius: 50%;
+  background: var(--bg-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: var(--rarity-color);
+  position: relative;
+}
+.hub-badge-card.earned .hub-badge-icon {
+  background: linear-gradient(135deg, var(--rarity-color), var(--rarity-color));
+  color: #fff;
+  box-shadow: 0 0 24px var(--rarity-glow);
+}
+.hub-badge-lock {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.hub-badge-title {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0 0 4px;
+  line-height: 1.2;
+}
+.hub-badge-desc {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  margin: 0 0 10px;
+  line-height: 1.4;
+  min-height: 30px;
+}
+
+.hub-badge-earned {
+  font-size: 0.74rem;
+  color: #22c55e;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.hub-badge-progress {
+  margin-bottom: 8px;
+}
+.hub-badge-progress-track {
+  height: 5px;
+  background: var(--bg-2);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+.hub-badge-progress-fill {
+  height: 100%;
+  background: var(--rarity-color);
+  border-radius: 4px;
+  transition: width 0.6s ease;
+}
+.hub-badge-progress span {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.hub-badge-bonus {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+  padding: 3px 10px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hub-badges-hint {
+  margin-top: 16px;
+  padding: 10px 14px;
+  background: var(--bg-2);
+  border-radius: 10px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1.5;
+}
+/* ════════════════════════════════════════════
+   Hero — 뱃지 진열장 버튼
+   ════════════════════════════════════════════ */
+
+.hub-hero-badges-btn {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 10px 18px;
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  transition: 0.2s;
+  backdrop-filter: blur(4px);
+  margin-left: 8px;
+}
+.hub-hero-badges-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+.hub-hero-badges-btn > i {
+  font-size: 1.5rem;
+  color: #fbbf24;
+  filter: drop-shadow(0 2px 6px rgba(251, 191, 36, 0.5));
+}
+.hub-hero-badges-btn-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  line-height: 1;
+}
+.hub-hero-badges-btn-label {
+  font-size: 0.74rem;
+  font-weight: 600;
+  opacity: 0.85;
+}
+.hub-hero-badges-btn-count {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+}
+.hub-hero-badges-btn-count strong {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+.hub-hero-badges-btn-count em {
+  font-style: normal;
+  font-size: 0.78rem;
+  opacity: 0.75;
+}
+
+/* ════════════════════════════════════════════
+   뱃지 모달 — 내부 스타일
+   ════════════════════════════════════════════ */
+
+.hub-badges-modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.hub-badges-modal-summary {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(247, 37, 133, 0.05));
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 12px;
+  align-self: flex-start;
+}
+.hub-badges-modal-summary span {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.hub-badges-modal-summary strong {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #f59e0b;
+}
+
+/* 모달 안 스크롤 */
+.hub-badges-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+.hub-badges-modal-body::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 3px;
+}
+.hub-badges-modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
