@@ -7,7 +7,9 @@ const TABS = [
   { id: 'notices',    label: '공지/팝업 관리' },
   { id: 'events',     label: '이달의 소식' },
   { id: 'polls',      label: '사내 투표' },
-  { id: 'rooms', label: '회의실 관리' },
+  { id: 'rooms',      label: '회의실 관리' },
+  { id: 'missions',   label: '도전 과제' },
+  { id: 'badges',     label: '뱃지' },
   { id: 'monitoring', label: '시스템 모니터링' },
 ];
 
