@@ -1,6 +1,10 @@
-// 일정 페이지 좌측 사이드바 — 미니 캘린더 + 카테고리 필터.
+// components/schedule/ScheduleSidebar.jsx
+// 일정 페이지 좌측 사이드바 — 미니 캘린더 + 카테고리 필터 + 다가오는 일정 + 받은 초대.
 
+import { useState } from 'react';
 import { useSchedule, CATEGORIES } from '../../contexts/ScheduleContext';
+import ScheduleUpcomingWidget from './ScheduleUpcomingWidget';
+import ScheduleInvitationsWidget from './ScheduleInvitationsWidget';
 
 const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -28,6 +32,12 @@ export default function ScheduleSidebar() {
 
   return (
     <aside className="schedule-sidebar">
+      {/* 받은 초대 (있을 때만) */}
+      <ScheduleInvitationsWidget />
+
+      {/* 다가오는 일정 */}
+      <ScheduleUpcomingWidget />
+
       {/* 미니 캘린더 */}
       <div className="schedule-mini-cal">
         <div className="schedule-mini-cal-header">
