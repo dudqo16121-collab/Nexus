@@ -7,6 +7,9 @@ import StickyModal from './StickyModal';
 import TimerModal from './TimerModal';
 import WikiModal from "./WikiModal";
 import { useToast } from '../../contexts/ToastContext';
+import ActionCenterPanel from './ActionCenterPanel';
+import KudosBoardPanel from './KudosBoardPanel';
+import { createPortal } from 'react-dom';
 
 const COMING_SOON = () => toast.info('이 기능은 다음 작업에서 구현될 예정입니다.');
 
@@ -22,7 +25,8 @@ export default function QuickToolbar() {
   const toolbarRef = useRef(null);
   const triggerRef = useRef(null);
   const { open: openMessenger } = useMessenger();
-
+  const [isActionCenterOpen, setIsActionCenterOpen] = useState(false);
+  const [isKudosOpen, setIsKudosOpen] = useState(false);
   /* 외부 클릭 감지 */
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -64,6 +68,10 @@ export default function QuickToolbar() {
   onClick: () => { setIsApiOpen(true); setIsOpen(false); } },
 
     { label: '스마트 협업 도구', isLabel: true },
+    { icon: 'fa-list-check', iconColor: 'var(--primary-color)', text: '나의 액션 아이템',
+      onClick: () => { setIsActionCenterOpen(true); setIsOpen(false); } },
+    { icon: 'fa-heart', iconColor: '#f72585', text: '칭찬 보드',
+      onClick: () => { setIsKudosOpen(true); setIsOpen(false); } },
     { icon: 'fa-video',      iconColor: 'var(--success)', text: '즉석 화상회의 개설', onClick: COMING_SOON },
     { icon: 'fa-pen-ruler',  iconColor: 'var(--primary-color)', text: '팀 화이트보드 캔버스', onClick: COMING_SOON },
     { icon: 'fa-robot',      iconColor: '#9d4edd', text: 'AI 일일 업무 요약', onClick: COMING_SOON },
@@ -72,66 +80,57 @@ export default function QuickToolbar() {
       onClick: () => { openMessenger(); setIsOpen(false); } },
   ];
 
-  return (
+return (
     <>
-      {/* 토글 버튼 */}
-      <div
-        ref={triggerRef}
-        className="toolbar-toggle"
-        onClick={() => setIsOpen(true)}
-      >
-        <i className="fa-solid fa-plus"></i>
-      </div>
+      {createPortal(
+        <>
+          {/* 토글 버튼 */}
+          <div ref={triggerRef} className="toolbar-toggle" onClick={() => setIsOpen(true)}>
+            <i className="fa-solid fa-plus"></i>
+          </div>
 
-      {/* 슬라이드 패널 */}
-      <div
-        ref={toolbarRef}
-        className={`right-toolbar ${isOpen ? 'open' : ''}`}
-      >
-        <div className="toolbar-header">
-          <h4>
-            <i className="fa-solid fa-bolt" style={{ color: 'var(--warning)' }}></i>
-            퀵 툴바
-          </h4>
-          <i
-            className="fa-solid fa-xmark"
-            style={{ cursor: 'pointer', fontSize: '1.2rem', color: 'var(--text-muted)' }}
-            onClick={() => setIsOpen(false)}
-          ></i>
-        </div>
-        <div className="toolbar-content">
-          {ITEMS.map((item, idx) =>
-            item.isLabel ? (
-              <div key={idx} className="toolbar-label" style={{ marginTop: idx === 0 ? 0 : 20 }}>
-                {idx > 0 && <div className="toolbar-divider"></div>}
-                {item.label}
-              </div>
-            ) : (
-              <div key={idx} className="toolbar-item" onClick={item.onClick}>
-                <i className={`fa-solid ${item.icon}`} style={item.iconColor ? { color: item.iconColor } : undefined}></i>
-                {item.text}
-              </div>
-            )
-          )}
-        </div>
-      </div>
-    {/* 칸반보드 모달 */}
-<KanbanModal isOpen={isKanbanOpen} onClose={() => setIsKanbanOpen(false)} />
+          {/* 슬라이드 패널 */}
+          <div ref={toolbarRef} className={`right-toolbar ${isOpen ? 'open' : ''}`}>
+            <div className="toolbar-header">
+              <h4>
+                <i className="fa-solid fa-bolt" style={{ color: 'var(--warning)' }}></i>
+                퀵 툴바
+              </h4>
+              <i
+                className="fa-solid fa-xmark"
+                style={{ cursor: 'pointer', fontSize: '1.2rem', color: 'var(--text-muted)' }}
+                onClick={() => setIsOpen(false)}
+              ></i>
+            </div>
+            <div className="toolbar-content">
+              {ITEMS.map((item, idx) =>
+                item.isLabel ? (
+                  <div key={idx} className="toolbar-label" style={{ marginTop: idx === 0 ? 0 : 20 }}>
+                    {idx > 0 && <div className="toolbar-divider"></div>}
+                    {item.label}
+                  </div>
+                ) : (
+                  <div key={idx} className="toolbar-item" onClick={item.onClick}>
+                    <i className={`fa-solid ${item.icon}`} style={item.iconColor ? { color: item.iconColor } : undefined}></i>
+                    {item.text}
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+        </>,
+        document.body
+      )}
 
-{/* 알림 센터 모달 */}
-<NotificationModal isOpen={isNotifOpen} onClose={() => setIsNotifOpen(false)} />
-
-  {/* API 연동 센터 모달 */}
-<ApiModal isOpen={isApiOpen} onClose={() => setIsApiOpen(false)} />
-  
-  {/* 스티커 메모 모달 */}
-  <StickyModal isOpen={isStickyOpen} onClose={() => setIsStickyOpen(false)} />
-
-    {/* 포모도로 타이머 모달 */}
-<TimerModal isOpen={isTimerOpen} onClose={() => setIsTimerOpen(false)} />
-
-      {/* 사내위키 */}
-    <WikiModal isOpen={wikiOpen} onClose={() => setWikiOpen(false)} />
+      {/* 모달들 — 자기 자리에서 렌더 (모달 라이브러리가 알아서 포털) */}
+      <KanbanModal isOpen={isKanbanOpen} onClose={() => setIsKanbanOpen(false)} />
+      <NotificationModal isOpen={isNotifOpen} onClose={() => setIsNotifOpen(false)} />
+      <ApiModal isOpen={isApiOpen} onClose={() => setIsApiOpen(false)} />
+      <StickyModal isOpen={isStickyOpen} onClose={() => setIsStickyOpen(false)} />
+      <TimerModal isOpen={isTimerOpen} onClose={() => setIsTimerOpen(false)} />
+      <WikiModal isOpen={wikiOpen} onClose={() => setWikiOpen(false)} />
+      <ActionCenterPanel isOpen={isActionCenterOpen} onClose={() => setIsActionCenterOpen(false)} />
+      <KudosBoardPanel isOpen={isKudosOpen} onClose={() => setIsKudosOpen(false)} />
     </>
   );
 }

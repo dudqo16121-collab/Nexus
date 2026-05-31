@@ -1,11 +1,15 @@
-// 페이지 최상단 — 내 레벨 / 진행 바 / 받은 칭찬 통계.
+// components/hub/HubHero.jsx
+// 페이지 최상단 — 내 레벨 / 진행 바 / 받은 칭찬 통계 / 뱃지 진열장.
 
+import { useState } from 'react';
 import { useHub } from '../../contexts/HubContext';
 import { useAuth } from '../../contexts/AuthContext';
+import HubBadgesModal from './HubBadgesModal';
 
 export default function HubHero() {
-  const { myStats, myReceivedKudos, openSendKudos } = useHub();
+  const { myStats, myReceivedKudos, openSendKudos, badgeProgress } = useHub();
   const { profile } = useAuth();
+  const [badgesModalOpen, setBadgesModalOpen] = useState(false);
 
   const progressPct = (myStats.progressInLevel / myStats.nextLevelAt) * 100;
   const monthCount = myReceivedKudos.filter((k) => {
@@ -13,6 +17,9 @@ export default function HubHero() {
     const now = new Date();
     return t.getFullYear() === now.getFullYear() && t.getMonth() === now.getMonth();
   }).length;
+
+  const earnedCount = badgeProgress.filter((b) => b.earned).length;
+  const totalBadges = badgeProgress.length;
 
   return (
     <section className="hub-hero">
@@ -41,6 +48,23 @@ export default function HubHero() {
             <div className="hub-hero-stat-label">이번달 받은 칭찬</div>
             <div className="hub-hero-stat-value">{monthCount} 개</div>
           </div>
+
+          {/* 뱃지 진열장 버튼 */}
+          <button
+            type="button"
+            className="hub-hero-badges-btn"
+            onClick={() => setBadgesModalOpen(true)}
+            title="뱃지 진열장 열기"
+          >
+            <i className="fa-solid fa-medal" />
+            <div className="hub-hero-badges-btn-info">
+              <span className="hub-hero-badges-btn-label">뱃지</span>
+              <span className="hub-hero-badges-btn-count">
+                <strong>{earnedCount}</strong>
+                <em>/ {totalBadges}</em>
+              </span>
+            </div>
+          </button>
         </div>
       </div>
 
@@ -63,6 +87,12 @@ export default function HubHero() {
       >
         <i className="fa-solid fa-heart" /> 동료에게 칭찬 보내기
       </button>
+
+      {/* 뱃지 모달 */}
+      <HubBadgesModal
+        isOpen={badgesModalOpen}
+        onClose={() => setBadgesModalOpen(false)}
+      />
     </section>
   );
 }

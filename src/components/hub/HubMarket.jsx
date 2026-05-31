@@ -1,11 +1,13 @@
 // components/hub/HubMarket.jsx
-// 포인트 상점 + 인벤토리.
+// 포인트 상점 + 인벤토리 + 후기.
 
 import { useState, useMemo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useHub, PRODUCT_CATEGORIES } from '../../contexts/HubContext';
 import { useToast } from '../../contexts/ToastContext';
 import HubProductEditorModal from './HubProductEditorModal';
+import HubReviewModal from './HubReviewModal';
+import HubReviewList from './HubReviewList';
 
 const STATUS_META = {
   pending: { label: '미사용', color: '#06d6a0', icon: 'fa-check-circle' },
@@ -27,19 +29,25 @@ export default function HubMarket() {
     products,
     purchases,
     marketLoading,
-    myPoints,           // HubContext 가 노출하는 본인 포인트 (없으면 0)
+    myPoints,
     purchaseProduct,
     useMyPurchase,
     deleteProduct,
+    productRatings,
+    reviewsByProduct,
   } = useHub();
 
   const isAdmin = profile?.is_admin === true;
 
-  const [tab, setTab] = useState('shop'); // 'shop' | 'inventory'
+  const [tab, setTab] = useState('shop');
   const [filter, setFilter] = useState('all');
   const [editorOpen, setEditorOpen] = useState(false);
   const [editTarget, setEditTarget] = useState(null);
-  const [buying, setBuying] = useState(null); // productId
+  const [buying, setBuying] = useState(null);
+  
+  /* 후기 관련 상태 */
+  const [reviewModalState, setReviewModalState] = useState({ open: false, product: null, purchase: null });
+  const [reviewExpandedPurchase, setReviewExpandedPurchase] = useState(null);
 
   /* 필터 */
   const filteredProducts = useMemo(() => {
@@ -53,9 +61,7 @@ export default function HubMarket() {
       toast.error('포인트가 부족합니다.');
       return;
     }
-    if (!confirm(
-      `"${product.name}"을(를) ${product.price_points}P로 구매하시겠습니까?`
-    )) return;
+    if (!confirm(`"${product.name}"을(를) ${product.price_points}P로 구매하시겠습니까?`)) return;
 
     setBuying(product.id);
     const res = await purchaseProduct(product.id);
@@ -114,13 +120,11 @@ export default function HubMarket() {
         </button>
 
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 10 }}>
-          {/* 보유 포인트 */}
           <div className="hub-market-points">
             <i className="fa-solid fa-coins" />
             <span>{myPoints || 0}P</span>
           </div>
 
-          {/* 관리자 — 상품 등록 */}
           {isAdmin && tab === 'shop' && (
             <button
               type="button"
@@ -139,7 +143,6 @@ export default function HubMarket() {
       {/* 상점 탭 */}
       {tab === 'shop' && (
         <>
-          {/* 카테고리 필터 */}
           <div className="hub-market-filters">
             {PRODUCT_CATEGORIES.map((c) => (
               <button
@@ -154,54 +157,63 @@ export default function HubMarket() {
             ))}
           </div>
 
-          {/* 상품 그리드 */}
           {marketLoading ? (
             <div className="hub-market-empty">
               <i className="fa-solid fa-spinner fa-spin" /> 불러오는 중...
             </div>
           ) : filteredProducts.length === 0 ? (
             <div className="hub-market-empty">
-              <i className="fa-regular fa-folder-open" />
+              <i className="fa-solid fa-store" />
               <p>등록된 상품이 없어요.</p>
-              {isAdmin && (
-                <button
-                  className="hub-market-empty-btn"
-                  onClick={() => { setEditTarget(null); setEditorOpen(true); }}
-                >
-                  첫 상품 등록하기
-                </button>
-              )}
             </div>
           ) : (
             <div className="hub-market-grid">
               {filteredProducts.map((p) => {
-                const canBuy = (myPoints || 0) >= p.price_points && p.stock !== 0;
+                const canBuy = (myPoints || 0) >= p.price_points;
                 return (
                   <div key={p.id} className="hub-product-card">
                     <div
                       className="hub-product-icon"
-                      style={{ background: `${p.color || '#4361ee'}15`, color: p.color || '#4361ee' }}
+                      style={{
+                        background: `${p.color || '#4361ee'}15`,
+                        color: p.color || '#4361ee',
+                      }}
                     >
                       <i className={`fa-solid ${p.icon || 'fa-gift'}`} />
                     </div>
                     <h4 className="hub-product-name">{p.name}</h4>
-                    {p.description && (
-                      <p className="hub-product-desc">{p.description}</p>
+
+                    {/* 별점 표시 */}
+                    {productRatings[p.id] && (
+                      <div className="hub-product-rating">
+                        <div className="hub-review-summary-stars" style={{ fontSize: '0.78rem' }}>
+                          {[1, 2, 3, 4, 5].map((n) => (
+                            <i
+                              key={n}
+                              className={`fa-solid fa-star ${n <= Math.round(productRatings[p.id].average) ? 'active' : ''}`}
+                            />
+                          ))}
+                          <strong>{productRatings[p.id].average.toFixed(1)}</strong>
+                          <span>({productRatings[p.id].count})</span>
+                        </div>
+                      </div>
                     )}
+
+                    <p className="hub-product-desc">{p.description || '\u00a0'}</p>
                     <div className="hub-product-footer">
                       <span className="hub-product-price">
                         <i className="fa-solid fa-coins" /> {p.price_points}P
                       </span>
-                      {p.stock !== -1 && (
+                      {p.stock >= 0 && (
                         <span className="hub-product-stock">
-                          재고 {p.stock}개
+                          재고 {p.stock === 0 ? '없음' : p.stock}
                         </span>
                       )}
                     </div>
                     <button
                       type="button"
                       className="hub-product-buy-btn"
-                      disabled={!canBuy || buying === p.id}
+                      disabled={!canBuy || p.stock === 0 || buying === p.id}
                       onClick={() => handleBuy(p)}
                     >
                       {buying === p.id ? (
@@ -258,56 +270,91 @@ export default function HubMarket() {
             <div className="hub-inventory-list">
               {purchases.map((purchase) => {
                 const status = STATUS_META[purchase.status] || STATUS_META.pending;
+                const product = products.find((p) => p.id === purchase.product_id);
+                const productReviewCount = reviewsByProduct[purchase.product_id]?.length || 0;
+                
                 return (
-                  <div key={purchase.id} className={`hub-inv-card hub-inv-${purchase.status}`}>
-                    <div
-                      className="hub-inv-icon"
-                      style={{
-                        background: `${purchase.product_color || '#4361ee'}15`,
-                        color: purchase.product_color || '#4361ee',
-                      }}
-                    >
-                      <i className={`fa-solid ${purchase.product_icon || 'fa-gift'}`} />
-                    </div>
-                    <div className="hub-inv-body">
-                      <h4 className="hub-inv-name">{purchase.product_name}</h4>
-                      {purchase.product_description && (
-                        <p className="hub-inv-desc">{purchase.product_description}</p>
-                      )}
-                      <div className="hub-inv-meta">
-                        <span>
-                          <i className="fa-solid fa-coins" /> -{purchase.price_paid}P
+                  <div key={purchase.id}>
+                    <div className={`hub-inv-card hub-inv-${purchase.status}`}>
+                      <div
+                        className="hub-inv-icon"
+                        style={{
+                          background: `${purchase.product_color || '#4361ee'}15`,
+                          color: purchase.product_color || '#4361ee',
+                        }}
+                      >
+                        <i className={`fa-solid ${purchase.product_icon || 'fa-gift'}`} />
+                      </div>
+                      <div className="hub-inv-body">
+                        <h4 className="hub-inv-name">{purchase.product_name}</h4>
+                        {purchase.product_description && (
+                          <p className="hub-inv-desc">{purchase.product_description}</p>
+                        )}
+                        <div className="hub-inv-meta">
+                          <span>구매 {fmtDateTime(purchase.created_at)}</span>
+                          {purchase.used_at && (
+                            <>
+                              <span className="hub-inv-sep">·</span>
+                              <span>사용 {fmtDateTime(purchase.used_at)}</span>
+                            </>
+                          )}
+                          <span className="hub-inv-sep">·</span>
+                          <span>{purchase.price_paid}P 사용</span>
+                        </div>
+                      </div>
+
+                      <div className="hub-inv-actions">
+                        <span
+                          className="hub-inv-status"
+                          style={{
+                            background: `${status.color}15`,
+                            color: status.color,
+                          }}
+                        >
+                          <i className={`fa-solid ${status.icon}`} />
+                          {status.label}
                         </span>
-                        <span className="hub-inv-sep">·</span>
-                        <span>{fmtDateTime(purchase.created_at)} 구매</span>
-                        {purchase.used_at && (
-                          <>
-                            <span className="hub-inv-sep">·</span>
-                            <span>{fmtDateTime(purchase.used_at)} 사용</span>
-                          </>
+                        {purchase.status === 'pending' && (
+                          <button
+                            type="button"
+                            className="hub-inv-use-btn"
+                            onClick={() => handleUse(purchase)}
+                          >
+                            사용 처리
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          className="hub-inv-review-btn"
+                          onClick={() => {
+                            setReviewModalState({ open: true, product, purchase });
+                          }}
+                        >
+                          <i className="fa-solid fa-pen" /> 후기 작성
+                        </button>
+                        {productReviewCount > 0 && (
+                          <button
+                            type="button"
+                            className="hub-inv-review-toggle"
+                            onClick={() =>
+                              setReviewExpandedPurchase(
+                                reviewExpandedPurchase === purchase.id ? null : purchase.id
+                              )
+                            }
+                          >
+                            후기 {productReviewCount}개 보기
+                            <i className={`fa-solid fa-chevron-${reviewExpandedPurchase === purchase.id ? 'up' : 'down'}`} />
+                          </button>
                         )}
                       </div>
                     </div>
-                    <div className="hub-inv-actions">
-                      <span
-                        className="hub-inv-status"
-                        style={{
-                          background: `${status.color}15`,
-                          color: status.color,
-                        }}
-                      >
-                        <i className={`fa-solid ${status.icon}`} /> {status.label}
-                      </span>
-                      {purchase.status === 'pending' && (
-                        <button
-                          type="button"
-                          className="hub-inv-use-btn"
-                          onClick={() => handleUse(purchase)}
-                        >
-                          사용 처리
-                        </button>
-                      )}
-                    </div>
+
+                    {/* 펼쳐진 후기 */}
+                    {reviewExpandedPurchase === purchase.id && (
+                      <div className="hub-inv-reviews">
+                        <HubReviewList productId={purchase.product_id} product={product} />
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -316,11 +363,22 @@ export default function HubMarket() {
         </>
       )}
 
-      {/* 상품 편집 모달 */}
+      {/* 상품 편집 모달 (관리자) */}
       <HubProductEditorModal
         isOpen={editorOpen}
-        onClose={() => setEditorOpen(false)}
+        onClose={() => {
+          setEditorOpen(false);
+          setEditTarget(null);
+        }}
         product={editTarget}
+      />
+
+      {/* 후기 작성 모달 */}
+      <HubReviewModal
+        isOpen={reviewModalState.open}
+        onClose={() => setReviewModalState({ open: false, product: null, purchase: null })}
+        product={reviewModalState.product}
+        purchase={reviewModalState.purchase}
       />
     </div>
   );

@@ -14,6 +14,8 @@ import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotification, NOTIF_TYPES } from '../../contexts/NotificationContext';
 import { useToast } from '../../contexts/ToastContext';
+import { useApproval } from '../../contexts/ApprovalContext';
+import { useProject } from '../../contexts/ProjectContext';
 
 const FILTERS = [
   { value: 'all',      label: '전체',     icon: 'fa-inbox' },
@@ -62,6 +64,17 @@ export default function ActionCenter() {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState('all');
+
+    /* 인라인 액션용 — 결재/태스크 mutation */
+  const { processApproval } = useApproval();
+  const { moveTask } = useProject();
+
+  /* 처리 중인 아이템 ID — 중복 클릭 방지 + 카드 흐리게 */
+  const [processingIds, setProcessingIds] = useState(new Set());
+
+  /* 반려 코멘트 입력 중인 결재 ID — null 이면 입력창 닫힘 */
+  const [rejectingId, setRejectingId] = useState(null);
+  const [rejectComment, setRejectComment] = useState('');
 
   /* 결재 대기 + 할당 태스크 로드 */
   const loadExtra = useCallback(async () => {
@@ -207,6 +220,109 @@ export default function ActionCenter() {
     if (item.link) navigate(item.link);
   };
 
+  /* ─── 인라인 액션: 결재 승인 ─── */
+  const handleApprove = async (item) => {
+    if (processingIds.has(item.id)) return; // 중복 방지
+    setProcessingIds((prev) => new Set(prev).add(item.id));
+    try {
+      const res = await processApproval(item.refId, 'approved');
+      if (res?.ok) {
+        toast.success(res.message?.title || '승인 완료');
+        // 로컬 상태에서 즉시 제거 (다음 loadExtra 전까지 사라짐)
+        setApprovals((prev) => prev.filter((d) => d.id !== item.refId));
+      } else {
+        toast.error(res?.error || '승인 실패');
+      }
+    } catch (e) {
+      console.error('[ActionCenter.handleApprove]', e);
+      toast.error('처리 중 오류가 발생했습니다.');
+    } finally {
+      setProcessingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(item.id);
+        return next;
+      });
+    }
+  };
+
+  /* ─── 인라인 액션: 결재 반려 — 코멘트 필수 ─── */
+  const handleRejectSubmit = async (item) => {
+    const comment = rejectComment.trim();
+    if (!comment) {
+      toast.warning('반려 사유를 입력해주세요.');
+      return;
+    }
+    if (processingIds.has(item.id)) return;
+    setProcessingIds((prev) => new Set(prev).add(item.id));
+    try {
+      const res = await processApproval(item.refId, 'rejected', comment);
+      if (res?.ok) {
+        toast.success(res.message?.title || '반려 처리');
+        setApprovals((prev) => prev.filter((d) => d.id !== item.refId));
+        setRejectingId(null);
+        setRejectComment('');
+      } else {
+        toast.error(res?.error || '반려 실패');
+      }
+    } catch (e) {
+      console.error('[ActionCenter.handleRejectSubmit]', e);
+      toast.error('처리 중 오류가 발생했습니다.');
+    } finally {
+      setProcessingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(item.id);
+        return next;
+      });
+    }
+  };
+
+  /* ─── 인라인 액션: 태스크 완료 ─── */
+  const handleCompleteTask = async (item) => {
+    if (processingIds.has(item.id)) return;
+    setProcessingIds((prev) => new Set(prev).add(item.id));
+    try {
+      const res = await moveTask(item.refId, 'done');
+      if (res?.ok) {
+        toast.success('태스크를 완료 처리했어요.');
+        // 태스크는 loadExtra가 `neq('status', 'done')` 으로 거르니까
+        // 로컬에서도 즉시 제거하는 게 깔끔
+        setTasks((prev) => prev.filter((t) => t.id !== item.refId));
+      } else {
+        toast.error(res?.error || '처리 실패');
+      }
+    } catch (e) {
+      console.error('[ActionCenter.handleCompleteTask]', e);
+      toast.error('처리 중 오류가 발생했습니다.');
+    } finally {
+      setProcessingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(item.id);
+        return next;
+      });
+    }
+  };
+
+  /* ─── 인라인 액션: 알림 읽음 ─── */
+  const handleMarkRead = async (item) => {
+    if (!item.notifId) return;
+    if (processingIds.has(item.id)) return;
+    setProcessingIds((prev) => new Set(prev).add(item.id));
+    try {
+      await markAsRead(item.notifId);
+      // notifs는 useNotification에서 관리되므로 markAsRead 후 자동으로 목록에서 빠짐
+      // (filter((n) => !n.read_at) 가 다음 렌더에서 처리)
+    } catch (e) {
+      console.error('[ActionCenter.handleMarkRead]', e);
+      toast.error('읽음 처리 실패');
+    } finally {
+      setProcessingIds((prev) => {
+        const next = new Set(prev);
+        next.delete(item.id);
+        return next;
+      });
+    }
+  };
+  
   /* 모두 읽음 — 알림만 처리 (결재/태스크는 그대로) */
   const handleMarkAllRead = async () => {
     const unread = notifs.filter((n) => !n.read_at);
@@ -332,28 +448,212 @@ export default function ActionCenter() {
                   <span>{timeAgo(item.time)}</span>
                 </div>
               </div>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleClick(item);
-                }}
+
+{/* ─── 인라인 액션 버튼 영역 ─── */}
+              <div
+                onClick={(e) => e.stopPropagation()}
                 style={{
-                  background:
-                    item.kind === 'approval' ? 'var(--primary-color)' : 'var(--bg-2)',
-                  color: item.kind === 'approval' ? '#fff' : 'var(--text-main)',
-                  border:
-                    item.kind === 'approval' ? 'none' : '1px solid var(--border-color)',
-                  padding: '8px 15px',
-                  borderRadius: 8,
-                  cursor: 'pointer',
-                  fontWeight: 600,
-                  whiteSpace: 'nowrap',
-                  fontFamily: 'inherit',
-                  fontSize: '0.82rem',
+                  display: 'flex',
+                  gap: 6,
+                  alignItems: 'center',
+                  flexShrink: 0,
+                  opacity: processingIds.has(item.id) ? 0.5 : 1,
+                  pointerEvents: processingIds.has(item.id) ? 'none' : 'auto',
                 }}
               >
-                {item.btnText}
-              </button>
+                {/* 1) 결재 — 승인/반려 인라인 */}
+                {item.kind === 'approval' && item.refId && rejectingId !== item.id && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => handleApprove(item)}
+                      title="승인"
+                      style={{
+                        background: '#22c55e',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '8px 12px',
+                        borderRadius: 8,
+                        cursor: 'pointer',
+                        fontWeight: 700,
+                        fontSize: '0.82rem',
+                        fontFamily: 'inherit',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 4,
+                      }}
+                    >
+                      <i className="fa-solid fa-check" /> 승인
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRejectingId(item.id);
+                        setRejectComment('');
+                      }}
+                      title="반려"
+                      style={{
+                        background: 'transparent',
+                        color: '#ef4444',
+                        border: '1px solid #ef4444',
+                        padding: '8px 12px',
+                        borderRadius: 8,
+                        cursor: 'pointer',
+                        fontWeight: 700,
+                        fontSize: '0.82rem',
+                        fontFamily: 'inherit',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 4,
+                      }}
+                    >
+                      <i className="fa-solid fa-xmark" /> 반려
+                    </button>
+                  </>
+                )}
+
+{/* 1-b) 결재 반려 — 코멘트 입력 모드 */}
+                {item.kind === 'approval' && rejectingId === item.id && (
+                  <>
+                    <input
+                      type="text"
+                      autoFocus
+                      value={rejectComment}
+                      onChange={(e) => setRejectComment(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleRejectSubmit(item);
+                        if (e.key === 'Escape') {
+                          setRejectingId(null);
+                          setRejectComment('');
+                        }
+                      }}
+                      placeholder="반려 사유 (Enter 로 제출)"
+                      style={{
+                        padding: '8px 10px',
+                        borderRadius: 8,
+                        border: '1px solid #ef4444',
+                        background: 'var(--input-bg)',
+                        color: 'var(--text-main)',
+                        fontSize: '0.82rem',
+                        fontFamily: 'inherit',
+                        width: 220,
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRejectSubmit(item)}
+                      title="반려 제출"
+                      style={{
+                        background: '#ef4444',
+                        color: '#fff',
+                        border: 'none',
+                        padding: '8px 12px',
+                        borderRadius: 8,
+                        cursor: 'pointer',
+                        fontWeight: 700,
+                        fontSize: '0.82rem',
+                        fontFamily: 'inherit',
+                      }}
+                    >
+                      <i className="fa-solid fa-paper-plane" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRejectingId(null);
+                        setRejectComment('');
+                      }}
+                      title="취소"
+                      style={{
+                        background: 'transparent',
+                        color: 'var(--text-muted)',
+                        border: '1px solid var(--border-color)',
+                        width: 34,
+                        height: 34,
+                        borderRadius: 8,
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <i className="fa-solid fa-xmark" />
+                    </button>
+                  </>
+                )}
+                
+                {/* 2) 태스크 — 완료 처리 */}
+                {item.kind === 'task' && item.refId && (
+                  <button
+                    type="button"
+                    onClick={() => handleCompleteTask(item)}
+                    title="태스크 완료"
+                    style={{
+                      background: '#22c55e',
+                      color: '#fff',
+                      border: 'none',
+                      padding: '8px 12px',
+                      borderRadius: 8,
+                      cursor: 'pointer',
+                      fontWeight: 700,
+                      fontSize: '0.82rem',
+                      fontFamily: 'inherit',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    <i className="fa-solid fa-check" /> 완료
+                  </button>
+                )}
+
+                {/* 3) 알림(멘션/기타) — 읽음 처리 */}
+                {(item.kind === 'mention' || item.kind === 'other') && item.notifId && (
+                  <button
+                    type="button"
+                    onClick={() => handleMarkRead(item)}
+                    title="읽음 처리"
+                    style={{
+                      background: 'var(--bg-2)',
+                      color: 'var(--text-main)',
+                      border: '1px solid var(--border-color)',
+                      padding: '8px 12px',
+                      borderRadius: 8,
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                      fontSize: '0.82rem',
+                      fontFamily: 'inherit',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    <i className="fa-solid fa-eye" /> 읽음
+                  </button>
+                )}
+
+                {/* 4) 보조 — 상세 페이지로 이동 (작은 아이콘 버튼) */}
+                <button
+                  type="button"
+                  onClick={() => handleClick(item)}
+                  title="상세 페이지로 이동"
+                  style={{
+                    background: 'transparent',
+                    color: 'var(--text-muted)',
+                    border: '1px solid var(--border-color)',
+                    width: 34,
+                    height: 34,
+                    borderRadius: 8,
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '0.85rem',
+                  }}
+                >
+                  <i className="fa-solid fa-arrow-up-right-from-square" />
+                </button>
+              </div>
             </div>
           ))
         )}

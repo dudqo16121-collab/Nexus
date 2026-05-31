@@ -4,6 +4,7 @@ import { useNotification } from '../../contexts/NotificationContext';
 import NotificationModal from './NotificationModal';
 import { useToast } from '../../contexts/ToastContext';
 import { useSearch } from '../../contexts/SearchContext';
+import LayoutControls from './LayoutControls';
 
 export default function GroupwareHeader() {
   const toast = useToast();
@@ -78,9 +79,9 @@ export default function GroupwareHeader() {
   >⌘K</kbd>
 </div>
 
-        {/* 우측 아이콘들 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-
+{/* 우측 — 레이아웃 편집 컨트롤 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <LayoutControls />
         </div>
       </header>
 

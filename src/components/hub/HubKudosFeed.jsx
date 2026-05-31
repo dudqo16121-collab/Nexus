@@ -3,6 +3,7 @@
 import { useHub, KUDOS_TAGS } from '../../contexts/HubContext';
 import { useOrgChart } from '../../contexts/OrgChartContext';
 import { SkeletonList } from '../../components/common/Skeleton';
+import HubKudosReactions from './HubKudosReactions';
 
 function avatarUrl(u) {
   if (u?.avatar_url) return u.avatar_url;
@@ -78,7 +79,9 @@ export default function HubKudosFeed() {
                       {tag.label}
                     </span>
                   </div>
+
                   {k.message && <p className="hub-feed-message">"{k.message}"</p>}
+                  <HubKudosReactions kudosId={k.id} compact />
                   <span className="hub-feed-time">{timeAgo(k.created_at)}</span>
                 </div>
               </div>

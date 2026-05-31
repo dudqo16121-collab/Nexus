@@ -15,6 +15,9 @@ import { useApprovalBadge } from '../../hooks/useApprovalBadge';
 import { useMail } from '../../contexts/MailContext';
 import { supabase } from '../../lib/supabase';
 import { useToast } from '../../contexts/ToastContext';
+import { useStandup } from '../../contexts/StandupContext';
+import { useCoWork } from '../../contexts/CoWorkContext';
+import { useHub, BADGE_RARITY } from '../../contexts/HubContext';
 
 /* 오늘 날짜 (YYYY-MM-DD, 한국 기준) */
 function todayStr() {
@@ -56,6 +59,11 @@ export default function Hero() {
   const { user, profile } = useAuth();
   const approvalCount = useApprovalBadge();
   const { counts: mailCounts } = useMail();
+
+  const { featuredBadge } = useHub();
+
+  const { myToday, openEditor } = useStandup();
+  const { activeSessions, myActiveSession, openCreateModal } = useCoWork();
 
   /* 현재 시각 — 1분마다 갱신 (인사말 + 라이브 근무시간) */
   const [now, setNow] = useState(new Date());
@@ -207,7 +215,18 @@ export default function Hero() {
           <br />
           {greeting.text}.
         </h1>
-
+{featuredBadge && (
+          <span
+            className="hero-featured-badge"
+            title={`[${BADGE_RARITY[featuredBadge.rarity]?.label || ''}] ${featuredBadge.title} — ${featuredBadge.description}`}
+            style={{
+              '--badge-color': featuredBadge.color,
+              '--badge-glow': BADGE_RARITY[featuredBadge.rarity]?.glow || 'rgba(0,0,0,0.1)',
+            }}
+          >
+            <i className={`fa-solid ${featuredBadge.icon}`} />
+          </span>
+        )}
         <div className="hero-attendance">
           {workStatus.kind === 'not_in' ? (
             <>
@@ -320,6 +339,65 @@ export default function Hero() {
           </div>
           <i className="fa-solid fa-chevron-right hero-card-arrow" />
         </button>
+        {/* 스탠드업 미작성 배너 */}
+      {!myToday && (
+        <button
+          type="button"
+          className="hero-standup-banner"
+          onClick={openEditor}
+        >
+          <div className="hero-standup-icon">
+            <i className="fa-solid fa-mug-saucer" />
+          </div>
+          <div className="hero-standup-body">
+            <strong>오늘 스탠드업을 아직 작성하지 않았어요</strong>
+            <span>어제 한 일 · 오늘 할 일 · 블로커를 동료들과 공유해보세요.</span>
+          </div>
+          <span className="hero-standup-cta">
+            작성하기 <i className="fa-solid fa-arrow-right" />
+          </span>
+        </button>
+      )}
+      {/* 공동 작업 세션 배너 */}
+      {!myActiveSession && activeSessions.length > 0 && (
+        <button
+          type="button"
+          className="hero-cowork-banner"
+          onClick={() => {
+            const el = document.querySelector('.card-cowork-board');
+            el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }}
+        >
+          <div className="hero-cowork-icon">
+            <i className="fa-solid fa-handshake-angle" />
+          </div>
+          <div className="hero-cowork-body">
+            <strong>지금 {activeSessions.length}개의 공동 작업 세션이 진행 중이에요</strong>
+            <span>동료들과 함께 일하거나 합류해보세요.</span>
+          </div>
+          <span className="hero-cowork-cta">
+            보러가기 <i className="fa-solid fa-arrow-right" />
+          </span>
+        </button>
+      )}
+      {!myActiveSession && activeSessions.length === 0 && (
+        <button
+          type="button"
+          className="hero-cowork-banner start"
+          onClick={openCreateModal}
+        >
+          <div className="hero-cowork-icon">
+            <i className="fa-solid fa-play" />
+          </div>
+          <div className="hero-cowork-body">
+            <strong>오늘의 공동 작업 세션을 시작해보세요</strong>
+            <span>혼자 집중하는 세션도, 동료와 함께하는 세션도 좋아요.</span>
+          </div>
+          <span className="hero-cowork-cta">
+            시작하기 <i className="fa-solid fa-arrow-right" />
+          </span>
+        </button>
+      )}
       </div>
     </section>
   );
