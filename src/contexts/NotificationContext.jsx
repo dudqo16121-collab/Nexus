@@ -1,10 +1,12 @@
 // contexts/NotificationContext.jsx
-// 통합 알림 시스템 — 저장/읽음/실시간 + 알림 생성 헬퍼.
-//
-// 다른 컨텍스트(메일/태스크/결재/교육/허브)에서 알림을 만들 때는
-// useNotification().createNotification(...) 호출.
+// 통합 알림 시스템 — 성능 최적화 버전.
+// 변경점:
+//  - mountedRef + safeSet 으로 unmount 후 setState 방지
+//  - Realtime 채널 cleanup 안전성 강화
+//  - Provider value useMemo 로 안정화
+//  - markAllAsRead — 함수형 setState로 race condition 회피
 
-import { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 
@@ -12,29 +14,39 @@ const NotificationContext = createContext(null);
 
 /* 알림 타입별 메타 — 아이콘/색상 표준화 */
 export const NOTIF_TYPES = {
-  mail:     { icon: 'fa-envelope',     color: '#4361ee', label: '메일' },
-  mention:  { icon: 'fa-at',           color: '#06d6a0', label: '멘션' },
-  task:     { icon: 'fa-list-check',   color: '#8338ec', label: '태스크' },
-  approval: { icon: 'fa-stamp',        color: '#f72585', label: '결재' },
-  training: { icon: 'fa-graduation-cap', color: '#f59e0b', label: '교육' },
-  kudos:    { icon: 'fa-heart',        color: '#ec4899', label: '칭찬' },
-  mission:  { icon: 'fa-bullseye',     color: '#ff9f1c', label: '미션' },
-  system:   { icon: 'fa-bell',         color: '#64748b', label: '안내' },
-  project:  { icon: 'fa-diagram-project', color: '#8338ec', label: '프로젝트' },
-  feedback: { icon: 'fa-comment-dots', color: '#8338ec', label: '피드백' },
+  mail:     { icon: 'fa-envelope',         color: '#4361ee', label: '메일' },
+  mention:  { icon: 'fa-at',               color: '#06d6a0', label: '멘션' },
+  task:     { icon: 'fa-list-check',       color: '#8338ec', label: '태스크' },
+  approval: { icon: 'fa-stamp',            color: '#f72585', label: '결재' },
+  training: { icon: 'fa-graduation-cap',   color: '#f59e0b', label: '교육' },
+  kudos:    { icon: 'fa-heart',            color: '#ec4899', label: '칭찬' },
+  mission:  { icon: 'fa-bullseye',         color: '#ff9f1c', label: '미션' },
+  system:   { icon: 'fa-bell',             color: '#64748b', label: '안내' },
+  project:  { icon: 'fa-diagram-project',  color: '#8338ec', label: '프로젝트' },
+  feedback: { icon: 'fa-comment-dots',     color: '#8338ec', label: '피드백' },
 };
-
 
 export function NotificationProvider({ children }) {
   const { user } = useAuth();
+
+  /* unmount 가드 */
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
-  /* fetch — 최근 100개 */
+  /* ─── fetch — 최근 100개 ─── */
   const fetchNotifications = useCallback(async () => {
-    if (!user) { setItems([]); return; }
-    setLoading(true);
+    if (!user) {
+      if (mountedRef.current) setItems([]);
+      return;
+    }
+    if (mountedRef.current) setLoading(true);
     try {
       const { data, error } = await supabase
         .from('notifications')
@@ -43,21 +55,24 @@ export function NotificationProvider({ children }) {
         .order('created_at', { ascending: false })
         .limit(100);
       if (error) throw error;
-      setItems(data || []);
+      if (mountedRef.current) setItems(data || []);
     } catch (e) {
       console.error('[Notification] fetch:', e);
-      setItems([]);
+      if (mountedRef.current) setItems([]);
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
   }, [user]);
 
   useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
 
-  /* 실시간 구독 — 새 알림 들어오면 즉시 prepend */
+  /* ─── 실시간 구독 ─── */
   useEffect(() => {
     if (!user) return;
-    const channel = supabase
+    let channel = null;
+    let isActive = true;
+
+    channel = supabase
       .channel(`notif:${user.id}`)
       .on(
         'postgres_changes',
@@ -68,21 +83,36 @@ export function NotificationProvider({ children }) {
           filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
-          setItems((prev) => [payload.new, ...prev].slice(0, 100));
+          if (!isActive || !mountedRef.current) return;
+          setItems((prev) => {
+            /* 중복 방지 */
+            if (prev.some((n) => n.id === payload.new.id)) return prev;
+            return [payload.new, ...prev].slice(0, 100);
+          });
         }
       )
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+
+    return () => {
+      isActive = false;
+      if (channel) {
+        try {
+          supabase.removeChannel(channel);
+        } catch (e) {
+          console.warn('[Notification] removeChannel:', e);
+        }
+        channel = null;
+      }
+    };
   }, [user]);
 
-  /* 안 읽은 개수 */
+  /* ─── 안 읽은 개수 ─── */
   const unreadCount = useMemo(
     () => items.filter((n) => !n.read_at).length,
     [items]
   );
 
-  /* 알림 생성 헬퍼 — 다른 컨텍스트에서 호출.
-     toUserId 가 본인이면 스킵 (자기 자신에게 알림 안 줌). */
+  /* ─── 알림 생성 헬퍼 ─── */
   const createNotification = useCallback(async ({
     toUserId,
     type = 'system',
@@ -113,7 +143,7 @@ export function NotificationProvider({ children }) {
     }
   }, [user]);
 
-  /* 여러 대상에게 한 번에 (메일 다중 수신자, 멘션 다수 등) */
+  /* ─── 여러 대상에게 한 번에 ─── */
   const createBulkNotifications = useCallback(async (toUserIds = [], payload) => {
     const ids = toUserIds.filter((id) => id && id !== user?.id);
     if (ids.length === 0) return { ok: true };
@@ -139,22 +169,42 @@ export function NotificationProvider({ children }) {
     }
   }, [user]);
 
-  /* 읽음 처리 */
+  /* ─── 읽음 처리 — 단일 ─── */
   const markAsRead = useCallback(async (id) => {
-    const target = items.find((n) => n.id === id);
-    if (!target || target.read_at) return;
-    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n)));
+    const now = new Date().toISOString();
+    let needsUpdate = false;
+
+    /* 함수형 setState로 stale closure 회피 */
+    if (mountedRef.current) {
+      setItems((prev) => {
+        const target = prev.find((n) => n.id === id);
+        if (!target || target.read_at) return prev;
+        needsUpdate = true;
+        return prev.map((n) => (n.id === id ? { ...n, read_at: now } : n));
+      });
+    }
+
+    if (!needsUpdate) return;
+
     try {
-      await supabase.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', id);
+      await supabase
+        .from('notifications')
+        .update({ read_at: now })
+        .eq('id', id);
     } catch (e) {
       console.warn('[Notification] mark read failed', e);
     }
-  }, [items]);
+  }, []);
 
+  /* ─── 읽음 처리 — 전체 ─── */
   const markAllAsRead = useCallback(async () => {
     if (!user) return;
     const now = new Date().toISOString();
-    setItems((prev) => prev.map((n) => n.read_at ? n : { ...n, read_at: now }));
+
+    if (mountedRef.current) {
+      setItems((prev) => prev.map((n) => (n.read_at ? n : { ...n, read_at: now })));
+    }
+
     try {
       await supabase
         .from('notifications')
@@ -166,8 +216,11 @@ export function NotificationProvider({ children }) {
     }
   }, [user]);
 
+  /* ─── 단일 삭제 ─── */
   const removeOne = useCallback(async (id) => {
-    setItems((prev) => prev.filter((n) => n.id !== id));
+    if (mountedRef.current) {
+      setItems((prev) => prev.filter((n) => n.id !== id));
+    }
     try {
       await supabase.from('notifications').delete().eq('id', id);
     } catch (e) {
@@ -175,10 +228,13 @@ export function NotificationProvider({ children }) {
     }
   }, []);
 
+  /* ─── 전체 삭제 ─── */
   const clearAll = useCallback(async () => {
     if (!user) return;
     if (!window.confirm('모든 알림을 삭제하시겠어요?')) return;
-    setItems([]);
+
+    if (mountedRef.current) setItems([]);
+
     try {
       await supabase.from('notifications').delete().eq('user_id', user.id);
     } catch (e) {
@@ -186,15 +242,25 @@ export function NotificationProvider({ children }) {
     }
   }, [user]);
 
+  /* ─── Provider value 메모이즈 ─── */
+  const value = useMemo(() => ({
+    items, unreadCount, loading,
+    dropdownOpen, setDropdownOpen,
+    fetchNotifications,
+    createNotification, createBulkNotifications,
+    markAsRead, markAllAsRead,
+    removeOne, clearAll,
+  }), [
+    items, unreadCount, loading,
+    dropdownOpen,
+    fetchNotifications,
+    createNotification, createBulkNotifications,
+    markAsRead, markAllAsRead,
+    removeOne, clearAll,
+  ]);
+
   return (
-    <NotificationContext.Provider value={{
-      items, unreadCount, loading,
-      dropdownOpen, setDropdownOpen,
-      fetchNotifications,
-      createNotification, createBulkNotifications,
-      markAsRead, markAllAsRead,
-      removeOne, clearAll,
-    }}>
+    <NotificationContext.Provider value={value}>
       {children}
     </NotificationContext.Provider>
   );

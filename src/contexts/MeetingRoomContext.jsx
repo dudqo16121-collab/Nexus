@@ -154,6 +154,113 @@ export function MeetingRoomProvider({ children }) {
     [user, profile, date, refresh]
   );
 
+  /* ─── 특정 날짜의 모든 회의실 예약 조회 (외부 페이지에서 사용) ─── */
+  const fetchBookingsForDate = useCallback(async (targetDate) => {
+    try {
+      const { data, error } = await supabase
+        .from('room_bookings')
+        .select('*')
+        .eq('date', targetDate);
+      if (error) throw error;
+      return { ok: true, bookings: data || [] };
+    } catch (err) {
+      console.error('[MeetingRoom] fetchBookingsForDate:', err);
+      return { ok: false, error: err.message, bookings: [] };
+    }
+  }, []);
+
+  /* ─── 회의실 마스터 목록 (외부 페이지에서 사용) ─── */
+  const fetchRoomsOnly = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('meeting_rooms')
+        .select('*')
+        .order('name');
+      if (error) throw error;
+      return { ok: true, rooms: data || [] };
+    } catch (err) {
+      console.error('[MeetingRoom] fetchRoomsOnly:', err);
+      return { ok: false, error: err.message, rooms: [] };
+    }
+  }, []);
+
+  /* ─── 특정 날짜+슬롯에 빈 회의실 찾기 ─── */
+  const findAvailableRooms = useCallback(async (targetDate, timeSlot) => {
+    try {
+      const [roomsResult, bookingsResult] = await Promise.all([
+        fetchRoomsOnly(),
+        fetchBookingsForDate(targetDate),
+      ]);
+      if (!roomsResult.ok || !bookingsResult.ok) {
+        return { ok: false, rooms: [] };
+      }
+      const bookedRoomIds = new Set(
+        bookingsResult.bookings
+          .filter((b) => b.time_slot === timeSlot)
+          .map((b) => b.room_id)
+      );
+      const available = roomsResult.rooms.filter((r) => !bookedRoomIds.has(r.id));
+      return { ok: true, rooms: available, allRooms: roomsResult.rooms, bookings: bookingsResult.bookings };
+    } catch (err) {
+      console.error('[MeetingRoom] findAvailableRooms:', err);
+      return { ok: false, rooms: [] };
+    }
+  }, [fetchRoomsOnly, fetchBookingsForDate]);
+
+  /* ─── 일정 연동용 예약 생성 ─── */
+  const createBookingForSchedule = useCallback(
+    async ({ roomId, date: bookingDate, timeSlot, reason, scheduleEventId }) => {
+      if (!user) return { ok: false, error: '로그인이 필요합니다.' };
+      try {
+        const { data, error } = await supabase
+          .from('room_bookings')
+          .insert([{
+            room_id: roomId,
+            date: bookingDate,
+            time_slot: timeSlot,
+            user_id: user.id,
+            user_name: profile?.full_name || '내 예약',
+            reason: (reason || '').trim() || '일정 연동 예약',
+            schedule_event_id: scheduleEventId || null,
+          }])
+          .select()
+          .single();
+        if (error) throw error;
+        /* 현재 보고 있는 날짜와 같으면 로컬 상태도 갱신 */
+        if (mountedRef.current && bookingDate === date) {
+          setBookings((prev) => [...prev, data]);
+        }
+        return { ok: true, booking: data };
+      } catch (err) {
+        console.error('[MeetingRoom] createBookingForSchedule:', err);
+        return { ok: false, error: err.message };
+      }
+    },
+    [user, profile, date]
+  );
+
+  /* ─── 일정 연동 예약 취소 ─── */
+  const deleteBookingForSchedule = useCallback(
+    async (bookingId) => {
+      if (!bookingId) return { ok: true };
+      try {
+        const { error } = await supabase
+          .from('room_bookings')
+          .delete()
+          .eq('id', bookingId);
+        if (error) throw error;
+        if (mountedRef.current) {
+          setBookings((prev) => prev.filter((b) => b.id !== bookingId));
+        }
+        return { ok: true };
+      } catch (err) {
+        console.error('[MeetingRoom] deleteBookingForSchedule:', err);
+        return { ok: false, error: err.message };
+      }
+    },
+    []
+  );
+
   /* ── 예약 사용목적 수정 — 원본 updateRoomBooking 이관 ── */
   const updateBooking = useCallback(
     async (bookingId, reason) => {
@@ -286,6 +393,11 @@ export function MeetingRoomProvider({ children }) {
     editModal,
     openEditModal,
     closeEditModal,
+    fetchBookingsForDate,    // ← 추가
+    fetchRoomsOnly,          // ← 추가
+    findAvailableRooms,      // ← 추가
+    createBookingForSchedule, // ← 추가
+    deleteBookingForSchedule, // ← 추가
   };
 
   return (

@@ -1,4 +1,12 @@
-import { createContext, useContext, useState, useCallback, useMemo } from 'react';
+// contexts/BoardContext.jsx
+// 게시판 데이터 로직 — 성능 최적화 버전.
+// 변경점:
+//  - mountedRef + safeSet 으로 unmount 후 setState 방지
+//  - boardStats / hotPosts / monthlyRanking / recentComments 통합 계산 (1패스)
+//  - categoryCounts 1패스 계산
+//  - Provider value useMemo 로 안정화
+
+import { createContext, useContext, useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 import { removeMany } from '../lib/nexusFile';
@@ -10,17 +18,25 @@ const PAGE_SIZE = 20;
 export function BoardProvider({ children }) {
   const { user, profile } = useAuth();
 
-  // 데이터
+  /* unmount 가드 */
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
+
+  /* 데이터 */
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [dashboardNotices, setDashboardNotices] = useState([]);
 
-  // 필터/정렬/검색/페이지네이션
-  const [category, setCategory] = useState('all');      // 'all' | '공지사항' | '자유게시판' | '기술공유'
-  const [sortBy, setSortBy] = useState('latest');       // 'latest' | 'popular' | 'comments' | 'liked'
+  /* 필터/정렬/검색/페이지네이션 */
+  const [category, setCategory] = useState('all');
+  const [sortBy, setSortBy] = useState('latest');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
 
-  // 좋아요 (사용자별 localStorage)
+  /* 좋아요/조회수 키 (사용자별 localStorage) */
   const likedKey = useCallback(
     (postId) => `liked_${user?.id || 'guest'}_${postId}`,
     [user]
@@ -29,41 +45,39 @@ export function BoardProvider({ children }) {
     (postId) => !!localStorage.getItem(likedKey(postId)),
     [likedKey]
   );
-
-  // 조회수 중복 방지
   const viewedKey = useCallback(
     (postId) => `viewed_${user?.id || 'guest'}_${postId}`,
     [user]
   );
 
-  // 대시보드 공지 위젯 전용 — 공지글 우선 3개만 가볍게
-const [dashboardNotices, setDashboardNotices] = useState([]);
+  /* 대시보드 공지 위젯 전용 */
+  const fetchDashboardNotices = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('posts')
+      .select('id, title, author_name, created_at, is_notice, category')
+      .order('is_notice', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(3);
 
-const fetchDashboardNotices = useCallback(async () => {
-  // 공지글 우선, 없으면 최신글로 채워서 3개
-  const { data, error } = await supabase
-    .from('posts')
-    .select('id, title, author_name, created_at, is_notice, category')
-    .order('is_notice', { ascending: false })
-    .order('created_at', { ascending: false })
-    .limit(3);
+    if (!mountedRef.current) return;
+    if (error) {
+      console.error('[Board] fetchDashboardNotices error:', error);
+      setDashboardNotices([]);
+    } else {
+      setDashboardNotices(data || []);
+    }
+  }, []);
 
-  if (error) {
-    console.error('[Board] fetchDashboardNotices error:', error);
-    setDashboardNotices([]);
-  } else {
-    setDashboardNotices(data || []);
-  }
-}, []);
-
-  // 목록 가져오기
+  /* 목록 가져오기 */
   const fetchPosts = useCallback(async () => {
-    setLoading(true);
+    if (mountedRef.current) setLoading(true);
     const { data, error } = await supabase
       .from('posts')
       .select('*')
       .order('is_notice', { ascending: false })
       .order('created_at', { ascending: false });
+
+    if (!mountedRef.current) return;
 
     if (error) {
       console.error('[Board] fetchPosts error:', error);
@@ -82,7 +96,7 @@ const fetchDashboardNotices = useCallback(async () => {
     setLoading(false);
   }, []);
 
-  // 단일 게시글 가져오기 (조회수 처리 포함)
+  /* 단일 게시글 — 조회수 처리 포함 */
   const fetchPost = useCallback(
     async (postId) => {
       const { data, error } = await supabase
@@ -96,7 +110,6 @@ const fetchDashboardNotices = useCallback(async () => {
         return null;
       }
 
-      // 조회수 증가 (사용자별 1회만)
       let newViewCount = data.view_count || 0;
       if (!localStorage.getItem(viewedKey(postId))) {
         newViewCount += 1;
@@ -106,12 +119,11 @@ const fetchDashboardNotices = useCallback(async () => {
           .update({ view_count: newViewCount })
           .eq('id', postId);
 
-        // 로컬 목록도 동기화
-        setPosts((prev) =>
-          prev.map((p) =>
-            p.id === postId ? { ...p, view_count: newViewCount } : p
-          )
-        );
+        if (mountedRef.current) {
+          setPosts((prev) =>
+            prev.map((p) => (p.id === postId ? { ...p, view_count: newViewCount } : p))
+          );
+        }
       }
 
       return {
@@ -125,7 +137,7 @@ const fetchDashboardNotices = useCallback(async () => {
     [viewedKey]
   );
 
-  // 게시글 생성
+  /* 게시글 생성 */
   const createPost = useCallback(
     async ({ title, content, is_notice, category, attachments = [] }) => {
       if (!user) return null;
@@ -154,13 +166,13 @@ const fetchDashboardNotices = useCallback(async () => {
         return null;
       }
 
-      setPosts((prev) => [data, ...prev]);
+      if (mountedRef.current) setPosts((prev) => [data, ...prev]);
       return data;
     },
     [user, profile]
   );
 
-  // 게시글 수정
+  /* 게시글 수정 */
   const updatePost = useCallback(async (postId, updates) => {
     const { data, error } = await supabase
       .from('posts')
@@ -174,37 +186,39 @@ const fetchDashboardNotices = useCallback(async () => {
       return null;
     }
 
-    setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, ...data } : p)));
+    if (mountedRef.current) {
+      setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, ...data } : p)));
+    }
     return data;
   }, []);
 
-  // 게시글 삭제
-const deletePost = useCallback(
-  async (postId) => {
-    // 삭제 전 첨부파일 경로 수집
-    const post = posts.find((p) => p.id === postId);
-    const attachPaths = (post?.attachments || [])
-      .map((a) => a.path)
-      .filter(Boolean);
+  /* 게시글 삭제 */
+  const deletePost = useCallback(
+    async (postId) => {
+      const post = posts.find((p) => p.id === postId);
+      const attachPaths = (post?.attachments || [])
+        .map((a) => a.path)
+        .filter(Boolean);
 
-    const { error } = await supabase.from('posts').delete().eq('id', postId);
+      const { error } = await supabase.from('posts').delete().eq('id', postId);
+      if (error) {
+        console.error('[Board] deletePost error:', error);
+        return false;
+      }
 
-    if (error) {
-      console.error('[Board] deletePost error:', error);
-      return false;
-    }
+      if (attachPaths.length > 0) {
+        await removeMany(attachPaths);
+      }
 
-    // 게시글 삭제 성공 → 첨부파일 Storage 정리
-    if (attachPaths.length > 0) {
-      await removeMany(attachPaths);
-    }
+      if (mountedRef.current) {
+        setPosts((prev) => prev.filter((p) => p.id !== postId));
+      }
+      return true;
+    },
+    [posts]
+  );
 
-    setPosts((prev) => prev.filter((p) => p.id !== postId));
-    return true;
-  },
-  [posts]
-);
-  // 좋아요 토글
+  /* 좋아요 토글 — 낙관적 업데이트 */
   const toggleLike = useCallback(
     async (postId) => {
       const post = posts.find((p) => p.id === postId);
@@ -216,10 +230,11 @@ const deletePost = useCallback(
       if (liked) localStorage.removeItem(likedKey(postId));
       else localStorage.setItem(likedKey(postId), 'true');
 
-      // 낙관적 업데이트
-      setPosts((prev) =>
-        prev.map((p) => (p.id === postId ? { ...p, likes: newLikes } : p))
-      );
+      if (mountedRef.current) {
+        setPosts((prev) =>
+          prev.map((p) => (p.id === postId ? { ...p, likes: newLikes } : p))
+        );
+      }
 
       const { error } = await supabase
         .from('posts')
@@ -230,16 +245,18 @@ const deletePost = useCallback(
         // 롤백
         if (liked) localStorage.setItem(likedKey(postId), 'true');
         else localStorage.removeItem(likedKey(postId));
-        setPosts((prev) =>
-          prev.map((p) => (p.id === postId ? { ...p, likes: post.likes } : p))
-        );
+        if (mountedRef.current) {
+          setPosts((prev) =>
+            prev.map((p) => (p.id === postId ? { ...p, likes: post.likes } : p))
+          );
+        }
         console.error('[Board] toggleLike error:', error);
       }
     },
     [posts, isLikedByMe, likedKey]
   );
 
-  // 댓글 추가
+  /* 댓글 추가 */
   const addComment = useCallback(
     async (postId, text) => {
       if (!text.trim() || !user) return false;
@@ -266,15 +283,17 @@ const deletePost = useCallback(
         return false;
       }
 
-      setPosts((prev) =>
-        prev.map((p) => (p.id === postId ? { ...p, comments: updatedComments } : p))
-      );
+      if (mountedRef.current) {
+        setPosts((prev) =>
+          prev.map((p) => (p.id === postId ? { ...p, comments: updatedComments } : p))
+        );
+      }
       return true;
     },
     [posts, user, profile]
   );
 
-  // 댓글 삭제
+  /* 댓글 삭제 */
   const deleteComment = useCallback(
     async (postId, commentId) => {
       const post = posts.find((p) => p.id === postId);
@@ -292,30 +311,30 @@ const deletePost = useCallback(
         return false;
       }
 
-      setPosts((prev) =>
-        prev.map((p) => (p.id === postId ? { ...p, comments: updatedComments } : p))
-      );
+      if (mountedRef.current) {
+        setPosts((prev) =>
+          prev.map((p) => (p.id === postId ? { ...p, comments: updatedComments } : p))
+        );
+      }
       return true;
     },
     [posts]
   );
 
-  // 권한 체크
+  /* 권한 체크 */
   const canEdit = useCallback(
     (post) => post && user && (post.user_id === user.id || profile?.is_admin),
     [user, profile]
   );
 
-  // 필터링/정렬/페이지네이션 — derived
+  /* ─── 필터링된 목록 ─── */
   const filteredPosts = useMemo(() => {
-    let result = [...posts];
+    let result = posts;
 
-    // 카테고리 필터
     if (category !== 'all') {
       result = result.filter((p) => p.category === category);
     }
 
-    // 검색
     if (search.trim()) {
       const q = search.trim().toLowerCase();
       result = result.filter(
@@ -325,9 +344,13 @@ const deletePost = useCallback(
       );
     }
 
-    // 정렬 (공지는 항상 최상단)
-    const notices = result.filter((p) => p.is_notice);
-    const normals = result.filter((p) => !p.is_notice);
+    /* 공지 우선 + 정렬 */
+    const notices = [];
+    const normals = [];
+    for (const p of result) {
+      if (p.is_notice) notices.push(p);
+      else normals.push(p);
+    }
 
     const sortFn = {
       latest: (a, b) => new Date(b.created_at) - new Date(a.created_at),
@@ -339,143 +362,197 @@ const deletePost = useCallback(
     return [...notices.sort(sortFn), ...normals.sort(sortFn)];
   }, [posts, category, search, sortBy]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredPosts.length / PAGE_SIZE));
+  const totalPages = useMemo(
+    () => Math.max(1, Math.ceil(filteredPosts.length / PAGE_SIZE)),
+    [filteredPosts]
+  );
+
   const pagedPosts = useMemo(() => {
     const start = (page - 1) * PAGE_SIZE;
     return filteredPosts.slice(start, start + PAGE_SIZE);
   }, [filteredPosts, page]);
 
-  // 카테고리별 개수
-  const categoryCounts = useMemo(() => {
-    return {
-      all: posts.length,
-      공지사항: posts.filter((p) => p.category === '공지사항').length,
-      자유게시판: posts.filter((p) => p.category === '자유게시판').length,
-      기술공유: posts.filter((p) => p.category === '기술공유').length,
-    };
-  }, [posts]);
+  /* ─── 통합 통계 — 1패스로 계산 ─── */
+  const aggregateStats = useMemo(() => {
+    const now = new Date();
+    const todayStr = now.toDateString();
+    const thisYear = now.getFullYear();
+    const thisMonth = now.getMonth();
 
-  // 상단 통계 카드 (전체/오늘/HOT/내 글)
-const boardStats = useMemo(() => {
-  const todayStr = new Date().toDateString();
-  return {
-    total: posts.length,
-    today: posts.filter(
-      (p) => new Date(p.created_at).toDateString() === todayStr
-    ).length,
-    hot: posts.filter(
-      (p) => (p.view_count || 0) >= 100 || (p.likes || 0) >= 10
-    ).length,
-    mine: posts.filter(
-      (p) =>
+    /* 카테고리 카운트 */
+    const categoryCounts = {
+      all: posts.length,
+      공지사항: 0,
+      자유게시판: 0,
+      기술공유: 0,
+    };
+
+    /* 보드 통계 */
+    let todayCount = 0;
+    let hotCount = 0;
+    let mineCount = 0;
+
+    /* 이달의 작성 랭킹용 */
+    const monthlyCounts = {};
+
+    /* HOT 점수 + recentComments 누적 */
+    const scored = new Array(posts.length);
+    const allComments = [];
+
+    for (let i = 0; i < posts.length; i++) {
+      const p = posts[i];
+
+      /* 카테고리 카운트 */
+      if (p.category && categoryCounts[p.category] !== undefined) {
+        categoryCounts[p.category]++;
+      }
+
+      /* 오늘 작성 */
+      if (new Date(p.created_at).toDateString() === todayStr) {
+        todayCount++;
+      }
+
+      /* HOT (view≥100 or likes≥10) */
+      const views = p.view_count || 0;
+      const likes = p.likes || 0;
+      const commentsCount = p.comments?.length || 0;
+      if (views >= 100 || likes >= 10) hotCount++;
+
+      /* 내 글 */
+      if (
         (user && p.user_id === user.id) ||
         (profile?.full_name && p.author_name === profile.full_name)
-    ).length,
-  };
-}, [posts, user, profile]);
+      ) {
+        mineCount++;
+      }
 
-// HOT 게시글 (가중 점수: 조회수 + 좋아요*5 + 댓글수*3)
-const hotPosts = useMemo(() => {
-  return posts
-    .map((p) => ({
-      ...p,
-      _score:
-        (p.view_count || 0) +
-        (p.likes || 0) * 5 +
-        (p.comments?.length || 0) * 3,
-    }))
-    .sort((a, b) => b._score - a._score)
-    .slice(0, 6);
-}, [posts]);
+      /* HOT 점수 계산 (가중치) */
+      scored[i] = {
+        ...p,
+        _score: views + likes * 5 + commentsCount * 3,
+      };
 
-// 이번 달 작성 랭킹 (상위 5명)
-const monthlyRanking = useMemo(() => {
-  const now = new Date();
-  const thisMonth = posts.filter((p) => {
-    const d = new Date(p.created_at);
-    return (
-      d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()
-    );
-  });
-  const counts = {};
-  thisMonth.forEach((p) => {
-    const name = p.author_name || '익명';
-    counts[name] = (counts[name] || 0) + 1;
-  });
-  return Object.entries(counts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([name, count]) => ({ name, count }));
-}, [posts]);
+      /* 이달의 작성 랭킹 */
+      const d = new Date(p.created_at);
+      if (d.getFullYear() === thisYear && d.getMonth() === thisMonth) {
+        const name = p.author_name || '익명';
+        monthlyCounts[name] = (monthlyCounts[name] || 0) + 1;
+      }
 
-// 최근 댓글 (전체 게시글에서 최신 4개)
-const recentComments = useMemo(() => {
-  const all = [];
-  posts.forEach((p) => {
-    (p.comments || []).forEach((c) => {
-      all.push({
-        text: c.text || c.content || '',
-        author: c.author_name || c.author || '익명',
-        postId: p.id,
-        postTitle: p.title,
-        createdAt: c.time || c.created_at || p.created_at,
-      });
-    });
-  });
-  return all
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-    .slice(0, 4);
-}, [posts]);
+      /* 최근 댓글 누적 */
+      const comments = p.comments || [];
+      for (let j = 0; j < comments.length; j++) {
+        const c = comments[j];
+        allComments.push({
+          text: c.text || c.content || '',
+          author: c.author_name || c.author || '익명',
+          postId: p.id,
+          postTitle: p.title,
+          createdAt: c.time || c.created_at || p.created_at,
+        });
+      }
+    }
+
+    /* HOT 정렬 + 상위 6개 */
+    const hotPosts = scored
+      .sort((a, b) => b._score - a._score)
+      .slice(0, 6);
+
+    /* 월별 랭킹 상위 5명 */
+    const monthlyRanking = Object.entries(monthlyCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, count]) => ({ name, count }));
+
+    /* 최근 댓글 4개 */
+    const recentComments = allComments
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .slice(0, 4);
+
+    return {
+      categoryCounts,
+      boardStats: {
+        total: posts.length,
+        today: todayCount,
+        hot: hotCount,
+        mine: mineCount,
+      },
+      hotPosts,
+      monthlyRanking,
+      recentComments,
+    };
+  }, [posts, user, profile]);
+
+  const categoryCounts = aggregateStats.categoryCounts;
+  const boardStats = aggregateStats.boardStats;
+  const hotPosts = aggregateStats.hotPosts;
+  const monthlyRanking = aggregateStats.monthlyRanking;
+  const recentComments = aggregateStats.recentComments;
+
+  /* 필터 setter — 페이지 초기화 자동 */
+  const setCategoryWithReset = useCallback((c) => {
+    setCategory(c);
+    setPage(1);
+  }, []);
+  const setSortByWithReset = useCallback((s) => {
+    setSortBy(s);
+    setPage(1);
+  }, []);
+  const setSearchWithReset = useCallback((s) => {
+    setSearch(s);
+    setPage(1);
+  }, []);
+
+  /* ─── Provider value 메모이즈 ─── */
+  const value = useMemo(() => ({
+    // 상태
+    posts: pagedPosts,
+    allPosts: posts,
+    filteredPosts,
+    loading,
+    category,
+    sortBy,
+    search,
+    page,
+    totalPages,
+    categoryCounts,
+    boardStats,
+    hotPosts,
+    monthlyRanking,
+    recentComments,
+    dashboardNotices,
+    fetchDashboardNotices,
+    // 액션
+    fetchPosts,
+    fetchPost,
+    createPost,
+    updatePost,
+    deletePost,
+    toggleLike,
+    addComment,
+    deleteComment,
+    // 필터 setter
+    setCategory: setCategoryWithReset,
+    setSortBy: setSortByWithReset,
+    setSearch: setSearchWithReset,
+    setPage,
+    // 유틸
+    canEdit,
+    isLikedByMe,
+  }), [
+    pagedPosts, posts, filteredPosts, loading,
+    category, sortBy, search, page, totalPages,
+    categoryCounts, boardStats, hotPosts, monthlyRanking, recentComments,
+    dashboardNotices, fetchDashboardNotices,
+    fetchPosts, fetchPost,
+    createPost, updatePost, deletePost,
+    toggleLike, addComment, deleteComment,
+    setCategoryWithReset, setSortByWithReset, setSearchWithReset,
+    canEdit, isLikedByMe,
+  ]);
 
   return (
-    <BoardContext.Provider
-      value={{
-        // 상태
-        posts: pagedPosts,
-        allPosts: posts,
-        filteredPosts,
-        loading,
-        category,
-        sortBy,
-        search,
-        page,
-        totalPages,
-        categoryCounts,
-        boardStats,        // ⭐ 추가
-        hotPosts,          // ⭐ 추가
-        monthlyRanking,    // ⭐ 추가
-        recentComments,    // ⭐ 추가
-        dashboardNotices,         // ⭐ 추가
-        fetchDashboardNotices,    // ⭐ 추가
-        
-        // 액션
-        fetchPosts,
-        fetchPost,
-        createPost,
-        updatePost,
-        deletePost,
-        toggleLike,
-        addComment,
-        deleteComment,
-        // 필터 setter
-        setCategory: (c) => {
-          setCategory(c);
-          setPage(1);
-        },
-        setSortBy: (s) => {
-          setSortBy(s);
-          setPage(1);
-        },
-        setSearch: (s) => {
-          setSearch(s);
-          setPage(1);
-        },
-        setPage,
-        // 유틸
-        canEdit,
-        isLikedByMe,
-      }}
-    >
+    <BoardContext.Provider value={value}>
       {children}
     </BoardContext.Provider>
   );
